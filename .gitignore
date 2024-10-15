@@ -1,0 +1,14 @@
+# Ignorar archivos y carpetas generados por Android Studio
+.gradle/
+.idea/                # Ignora toda la carpeta .idea
+*.iml
+build/
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Ignorar archivos de caché del sistema operativo
+.DS_Store
+
+# Archivos de configuración locales
+local.properties
