@@ -9,7 +9,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.example.wallet.ui.theme.HomeScreen
+import com.example.wallet.ui.screens.HomeScreen
 import com.example.wallet.ui.theme.MonopolyWalletTheme
 
 class MainActivity : ComponentActivity() {

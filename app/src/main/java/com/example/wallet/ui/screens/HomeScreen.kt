@@ -1,4 +1,4 @@
-package com.example.wallet.ui.theme
+package com.example.wallet.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
