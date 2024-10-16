@@ -23,11 +23,12 @@ class MainActivity : ComponentActivity() {
                 // Usamos Scaffold para gestionar la estructura de la pantalla
                 Scaffold(
                     topBar = { CenterAlignedAppBar(title = "Monopoly Wallet") }, // Título toolbar
-                    modifier = Modifier.fillMaxSize()
-                ) { innerPadding ->
-                    // Aquí cambiamos el contenido de Greeting a HomeScreen
-                    HomeScreen(modifier = Modifier.padding(innerPadding))
-                }
+                    content = { innerPadding ->
+                        HomeScreen(modifier = Modifier
+                            .padding(innerPadding)
+                            .fillMaxSize())
+                    }
+                )
             }
         }
     }
