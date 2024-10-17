@@ -5,6 +5,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -16,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -85,15 +89,22 @@ fun CustomCard() {
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun GameOptionsDialog(onDismiss: () -> Unit) {
+    var numPlayers by remember { mutableStateOf(2) }
+    var initialMoney by remember { mutableStateOf("300000") }
+    var passGoMoney by remember { mutableStateOf("40000") }
+    var isBankAutomatic by remember { mutableStateOf(false) }
+    var selectedBanker by remember { mutableStateOf(1) }
+
     Dialog(onDismissRequest = onDismiss) {
         // Contenido del diálogo
         Surface(
             shape = RoundedCornerShape(8.dp),
             color = Color.White,
             modifier = Modifier
-                .padding(16.dp)
+                .padding(8.dp)
                 .fillMaxWidth()
         ) {
             Column(
@@ -101,23 +112,106 @@ fun GameOptionsDialog(onDismiss: () -> Unit) {
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
+                // Título del diálogo
                 Text(
                     text = "Opciones de Partida",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.Black
                 )
-                Button(onClick = { /* Acción 1 */ }) {
-                    Text("Opción 1")
+
+                // Número de jugadores
+                Text(text = "Número de Jugadores")
+
+                // FlowRow para organizar los botones
+                FlowRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center, // Centramos los botones horizontalmente
+                    verticalArrangement = Arrangement.SpaceBetween, // Espacio vertical entre filas
+                    maxItemsInEachRow = 3 // Mostrar 3 botones por fila
+                ) {
+                    for (i in 2..6) {
+                        Button(
+                            modifier = Modifier.padding(5.dp),
+                            onClick = { numPlayers = i },
+                            colors = if (numPlayers == i) ButtonDefaults.buttonColors(
+                                containerColor = Color.Gray
+                            ) else ButtonDefaults.buttonColors()
+                        ) {
+                            Text(text = "$i")
+                        }
+                    }
                 }
-                Button(onClick = { /* Acción 2 */ }) {
-                    Text("Opción 2")
+
+                // Dinero inicial
+                Text(text = "Dinero Inicial")
+                OutlinedTextField(
+                    value = initialMoney,
+                    onValueChange = { initialMoney = it },
+                    keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.fillMaxWidth(0.75f) // Ocupa el 75% del ancho disponible
+                )
+
+                // Dinero por pasar la salida
+                Text(text = "Dinero por Pasar la Salida")
+                OutlinedTextField(
+                    value = passGoMoney,
+                    onValueChange = { passGoMoney = it },
+                    keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.fillMaxWidth(0.75f) // Ocupa el 75% del ancho disponible
+                )
+
+                // Banca automática
+                Text(text = "Banca Automática")
+                Switch(
+                    checked = isBankAutomatic,
+                    onCheckedChange = { isBankAutomatic = it }
+                )
+
+                // Si la banca no es automática, elegir un jugador como banquero
+                if (!isBankAutomatic) {
+                    Text(text = "Seleccionar Banquero")
+
+                    // Estado para el menú desplegable
+                    var expanded by remember { mutableStateOf(false) }
+
+                    // Crear el menú desplegable
+                    ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = !expanded }) {
+                        OutlinedTextField(
+                            value = "Jugador $selectedBanker", // Muestra el jugador seleccionado
+                            onValueChange = { /* No es necesario */ },
+                            readOnly = true, // No se puede editar el texto
+                            label = { Text("Seleccionar Banquero") },
+                            trailingIcon = {
+                                Icon(Icons.Default.ArrowDropDown, contentDescription = "Dropdown Icon")
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth(0.75f)
+                                .menuAnchor() // Asegura que el menú se alinee correctamente
+                        )
+
+                        // Elemento del menú desplegable
+                        ExposedDropdownMenu(
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false }
+                        ) {
+                            for (i in 1..numPlayers) {
+                                DropdownMenuItem(onClick = {
+                                    selectedBanker = i // Selecciona el jugador como banquero
+                                    expanded = false // Cierra el menú después de seleccionar
+                                }, text = { Text(text = "Jugador $i") }) // Usando text como un parámetro
+                            }
+                        }
+                    }
                 }
+
                 Spacer(modifier = Modifier.height(8.dp))
+
+                // Botón para cerrar el diálogo
                 Button(onClick = onDismiss) {
                     Text("Cerrar")
                 }
-            }
+            } // Cierra Column
         }
     }
 }
