@@ -17,7 +17,7 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun HomeScreen(modifier: Modifier = Modifier) {
     // Crear la pantalla con un layout vertical
-    Column(modifier = Modifier
+    Column(modifier = modifier
         .fillMaxSize() // La pantalla ocupa todo el tamaño disponible
         .padding(16.dp), // Padding a toda la pantalla
         verticalArrangement = Arrangement.Top, // Coloca los elementos en la parte superior
