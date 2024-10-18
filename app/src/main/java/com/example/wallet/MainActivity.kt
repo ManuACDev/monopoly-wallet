@@ -10,7 +10,11 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.example.wallet.ui.screens.CenterAlignedAppBar
+import com.example.wallet.ui.screens.GameScreen
 import com.example.wallet.ui.screens.HomeScreen
 import com.example.wallet.ui.theme.MonopolyWalletTheme
 
@@ -19,7 +23,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            MonopolyWalletTheme {
+            /*MonopolyWalletTheme {
                 // Usamos Scaffold para gestionar la estructura de la pantalla
                 Scaffold(
                     topBar = { CenterAlignedAppBar(title = "Monopoly Wallet") }, // Título toolbar
@@ -29,8 +33,46 @@ class MainActivity : ComponentActivity() {
                             .fillMaxSize())
                     }
                 )
-            }
+            }*/
+            MyApp()
         }
+    }
+}
+
+@Composable
+fun MyApp() {
+    MonopolyWalletTheme {
+        val navController = rememberNavController()
+
+        // Scaffold es la estructura general de la app, si tienes una barra superior, etc.
+        Scaffold(
+            topBar = { CenterAlignedAppBar(title = "Monopoly Wallet") },
+            content = { innerPadding ->
+                // Sistema de navegación
+                NavHost(
+                    navController = navController,
+                    startDestination = "home" // Pantalla inicial
+                ) {
+                    composable("home") {
+                        HomeScreen(
+                            modifier = Modifier
+                                .padding(innerPadding)
+                                .fillMaxSize(),
+                            navController = navController // Pasar el controlador de navegación
+                        )
+                    }
+
+                    composable("game_options") {
+                        GameScreen(
+                            modifier = Modifier
+                                .padding(innerPadding)
+                                .fillMaxSize(),
+                            navController = navController
+                        )
+                    }
+                }
+            }
+        )
     }
 }
 
@@ -38,6 +80,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun HomeScreenPreview() {
     MonopolyWalletTheme {
-        HomeScreen()
+        val navController = rememberNavController()
+        HomeScreen(navController = navController)
     }
 }
