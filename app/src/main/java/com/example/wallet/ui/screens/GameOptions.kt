@@ -1,2 +1,271 @@
 package com.example.wallet.ui.screens
 
+import android.annotation.SuppressLint
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+
+@Composable
+fun GameScreen(modifier: Modifier = Modifier, navController: NavController) {
+    Column(
+        modifier = modifier
+            .fillMaxSize(), // La pantalla ocupa el tamaño disponible
+        verticalArrangement = Arrangement.Top, // Coloca los elementos en la parte superior
+        horizontalAlignment = Alignment.CenterHorizontally // Centra los elementos horizontalmente
+    ) {
+        // Aquí pasamos un valor a `onGameCreated` y `onBack`
+        GameContent(
+            onGameCreated = {
+                // Lógica de lo que sucede cuando se crea la partida
+                // Ejemplo: Puedes navegar a una nueva pantalla o mostrar un mensaje
+                println("Partida creada") // Reemplaza con tu lógica
+            },
+            onBack = { navController.popBackStack() } // Volver atrás usando popBackStack
+        )
+    }
+}
+
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@Composable
+fun GameContent(onGameCreated: () -> Unit, onBack: () -> Unit) {
+    var numPlayers by remember { mutableStateOf(6) }
+    var initialMoney by remember { mutableStateOf("300000") }
+    var passGoMoney by remember { mutableStateOf("40000") }
+    var isBankAutomatic by remember { mutableStateOf(false) }
+    var selectedBanker by remember { mutableStateOf(1) }
+    //var
+    val playersConnected by remember {
+        mutableStateOf(
+            listOf<String>(
+                "Jugador 1",
+                "Jugador 1",
+                "Jugador 1",
+                "Jugador 1",
+                "Jugador 1",
+                "Jugador 2"
+            )
+        )
+    } // Aquí irán los jugadores que se unen en tiempo real
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Crear Partida") },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
+                    }
+                }
+            )
+        }
+    ) { innerPadding ->
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(8.dp),
+            verticalArrangement = Arrangement.spacedBy(25.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            // Título
+            item {
+                Text(
+                    text = "Configuración de la Partida",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+            }
+
+            // Número de jugadores
+            item {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.spacedBy(15.dp), // Espacio entre los elementos dentro del item
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(text = "Número de Jugadores")
+                    FlowRow(
+                        verticalArrangement = Arrangement.SpaceBetween, // Espacio vertical entre filas
+                        horizontalArrangement = Arrangement.Center, // Centramos los botones horizontalmente
+                        maxItemsInEachRow = 3 // Mostrar 3 botones por fila
+                    ) {
+                        for (i in 2..6) {
+                            Button(
+                                modifier = Modifier.padding(3.dp),
+                                onClick = { numPlayers = i },
+                                colors = if (numPlayers == i) ButtonDefaults.buttonColors(
+                                    containerColor = Color.Gray
+                                ) else ButtonDefaults.buttonColors()
+                            ) {
+                                Text(text = "$i")
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Dinero inicial
+            item {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.spacedBy(15.dp), // Espacio entre los elementos dentro del item
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(text = "Dinero Inicial")
+                    OutlinedTextField(
+                        value = initialMoney,
+                        onValueChange = { initialMoney = it },
+                        keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+                        modifier = Modifier.fillMaxWidth(0.70f)
+                    )
+                }
+            }
+
+            // Dinero por pasar la salida
+            item {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.spacedBy(15.dp), // Espacio entre los elementos dentro del item
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(text = "Dinero por Pasar la Salida")
+                    OutlinedTextField(
+                        value = passGoMoney,
+                        onValueChange = { passGoMoney = it },
+                        keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+                        modifier = Modifier.fillMaxWidth(0.70f)
+                    )
+                }
+            }
+
+            // Banca automática
+            item {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.spacedBy(15.dp), // Espacio entre los elementos dentro del item
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(15.dp)
+                    ) {
+                        Text(text = "Banca Automática")
+                        Switch(
+                            checked = isBankAutomatic,
+                            onCheckedChange = { isBankAutomatic = it })
+                    }
+
+                    if (!isBankAutomatic) {
+                        // Seleccionar banquero
+                        var expanded by remember { mutableStateOf(false) }
+
+                        // Crear el menú desplegable
+                        ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = !expanded }) {
+                            OutlinedTextField(
+                                value = "Jugador $selectedBanker", // Muestra el jugador seleccionado
+                                onValueChange = { /* No es necesario */ },
+                                readOnly = true, // No se puede editar el texto
+                                label = { Text("Seleccionar Banquero") },
+                                trailingIcon = {
+                                    Icon(Icons.Default.ArrowDropDown, contentDescription = "Dropdown")
+                                },
+                                modifier = Modifier
+                                    .fillMaxWidth(0.70f)
+                                    .menuAnchor() // Asegura que el menú se alinee correctamente
+                            )
+
+                            // Elemento del menú desplegable
+                            ExposedDropdownMenu(
+                                expanded = expanded,
+                                onDismissRequest = { expanded = false }
+                            ) {
+                                for (i in 1..numPlayers) {
+                                    DropdownMenuItem(onClick = {
+                                            selectedBanker = i // Selecciona el jugador como banquero
+                                            expanded = false // Cierra el menú después de seleccionar
+                                        }, text = { Text("Jugador $i") } // Usando text como un parámetro
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Lista de jugadores conectados
+            item {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.spacedBy(15.dp), // Espacio entre los elementos dentro del item
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(text = "Jugadores Conectados", fontWeight = FontWeight.Bold)
+                    FlowRow(
+                        verticalArrangement = Arrangement.Center, // Centrar elementos verticalmente
+                        horizontalArrangement = Arrangement.spacedBy(15.dp), // Espacio horizontal entre filas
+                        maxItemsInEachRow = 3 // Mostrar 3 botones por fila
+                    ) {
+                        playersConnected.forEach { player ->
+                            Text(
+                                modifier = Modifier.padding(5.dp),
+                                text = player
+                            )
+                        }
+                    }
+                }
+            }
+
+            item {
+                // Botón para crear partida (solo habilitado si hay suficientes jugadores)
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(
+                    onClick = onGameCreated,
+                    enabled = playersConnected.size >= numPlayers // Solo habilitado cuando hay suficientes jugadores
+                ) {
+                    Text("Crear Partida")
+                }
+            }
+        } // Cierra LazyColumn
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun GameContentPreview() {
+    GameContent(
+        onGameCreated = { /* Acción al crear partida */ },
+        onBack = { /* Acción al volver */ }
+    )
+}
