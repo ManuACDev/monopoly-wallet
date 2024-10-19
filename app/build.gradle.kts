@@ -69,6 +69,7 @@ dependencies {
 
     // Firebase
     implementation(platform("com.google.firebase:firebase-bom:33.4.0"))
+    implementation(libs.firebase.firestore.ktx)
 
     // Otros test y depencias necesarias
     testImplementation(libs.junit)
