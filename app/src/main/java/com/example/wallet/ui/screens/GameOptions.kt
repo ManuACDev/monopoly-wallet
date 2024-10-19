@@ -6,13 +6,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -34,6 +31,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.wallet.models.GameConfig
+import com.example.wallet.services.FirestoreService
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import java.util.UUID
 
 @Composable
 fun GameScreen(modifier: Modifier = Modifier, navController: NavController) {
@@ -45,10 +48,9 @@ fun GameScreen(modifier: Modifier = Modifier, navController: NavController) {
     ) {
         // Aquí pasamos un valor a `onGameCreated` y `onBack`
         GameContent(
-            onGameCreated = {
-                // Lógica de lo que sucede cuando se crea la partida
-                // Ejemplo: Puedes navegar a una nueva pantalla o mostrar un mensaje
-                println("Partida creada") // Reemplaza con tu lógica
+            onGameCreated = {config ->
+                createGameInFirestore(config)
+                println("Partida creada con la configuración: $config")
             },
             onBack = { navController.popBackStack() } // Volver atrás usando popBackStack
         )
@@ -58,25 +60,15 @@ fun GameScreen(modifier: Modifier = Modifier, navController: NavController) {
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
-fun GameContent(onGameCreated: () -> Unit, onBack: () -> Unit) {
-    var numPlayers by remember { mutableStateOf(6) }
+fun GameContent(onGameCreated: (GameConfig) -> Unit, onBack: () -> Unit) {
+    var numPlayers by remember { mutableStateOf(2) }
     var initialMoney by remember { mutableStateOf("300000") }
     var passGoMoney by remember { mutableStateOf("40000") }
     var isBankAutomatic by remember { mutableStateOf(false) }
-    var selectedBanker by remember { mutableStateOf(1) }
-    //var
-    val playersConnected by remember {
-        mutableStateOf(
-            listOf<String>(
-                "Jugador 1",
-                "Jugador 1",
-                "Jugador 1",
-                "Jugador 1",
-                "Jugador 1",
-                "Jugador 2"
-            )
-        )
-    } // Aquí irán los jugadores que se unen en tiempo real
+
+    val isCreateButtonEnabled = numPlayers >= 2 &&
+            initialMoney.isNotEmpty() &&
+            passGoMoney.isNotEmpty()
 
     Scaffold(
         topBar = {
@@ -84,7 +76,7 @@ fun GameContent(onGameCreated: () -> Unit, onBack: () -> Unit) {
                 title = { Text("Crear Partida") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
                     }
                 }
             )
@@ -187,7 +179,7 @@ fun GameContent(onGameCreated: () -> Unit, onBack: () -> Unit) {
                             onCheckedChange = { isBankAutomatic = it })
                     }
 
-                    if (!isBankAutomatic) {
+                    /*if (!isBankAutomatic) {
                         // Seleccionar banquero
                         var expanded by remember { mutableStateOf(false) }
 
@@ -220,12 +212,12 @@ fun GameContent(onGameCreated: () -> Unit, onBack: () -> Unit) {
                                 }
                             }
                         }
-                    }
+                    }*/
                 }
             }
 
             // Lista de jugadores conectados
-            item {
+            /*item {
                 Column(
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.spacedBy(15.dp), // Espacio entre los elementos dentro del item
@@ -245,14 +237,22 @@ fun GameContent(onGameCreated: () -> Unit, onBack: () -> Unit) {
                         }
                     }
                 }
-            }
+            }*/
 
             item {
                 // Botón para crear partida (solo habilitado si hay suficientes jugadores)
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
-                    onClick = onGameCreated,
-                    enabled = playersConnected.size >= numPlayers // Solo habilitado cuando hay suficientes jugadores
+                    onClick = {
+                        val gameConfig = GameConfig(
+                            numPlayers = numPlayers,
+                            initialMoney = initialMoney.toInt(),
+                            passGoMoney = passGoMoney.toInt(),
+                            isBankAutomatic = isBankAutomatic
+                        )
+                        onGameCreated(gameConfig) // Configuración de la partida
+                    },
+                    enabled = isCreateButtonEnabled
                 ) {
                     Text("Crear Partida")
                 }
@@ -260,6 +260,33 @@ fun GameContent(onGameCreated: () -> Unit, onBack: () -> Unit) {
         } // Cierra LazyColumn
     }
 }
+
+fun createGameInFirestore(config: GameConfig) {
+    val firestoreService = FirestoreService()
+
+    // Generar un ID único para la partida
+    val gameId = UUID.randomUUID().toString()
+
+    // Crear el mapa de datos para la partida
+    val data = mapOf(
+        "numPlayers" to config.numPlayers,
+        "initialMoney" to config.initialMoney,
+        "passGoMoney" to config.passGoMoney,
+        "isBankAutomatic" to config.isBankAutomatic
+    )
+
+    // Llamar al servicio de Firestore para crear la partida
+    // Se recomienda usar coroutines para manejar el trabajo en segundo plano
+    CoroutineScope(Dispatchers.IO).launch {
+        try {
+            firestoreService.createGame(gameId, data)
+            println("Partida guardada exitosamente en Firestore")
+        } catch (e: Exception) {
+            println("Error al guardar la partida: ${e.message}")
+        }
+    }
+}
+
 
 @Preview(showBackground = true)
 @Composable
@@ -269,3 +296,15 @@ fun GameContentPreview() {
         onBack = { /* Acción al volver */ }
     )
 }
+
+/*
+// Preview para ver el diseño en Compose Preview
+fun GameContentPreview() {
+    GameContent(
+        onGameCreated = { gameConfig ->
+            // Aquí puedes realizar acciones como navegar a la pantalla de juego o iniciar la partida
+            println("Partida creada con la siguiente configuración: $gameConfig")
+        },
+        onBack = { /* Acción al volver */ }
+    )
+}*/
