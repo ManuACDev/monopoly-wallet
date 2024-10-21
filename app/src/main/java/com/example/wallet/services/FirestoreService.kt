@@ -1,5 +1,6 @@
 package com.example.wallet.services
 
+import com.example.wallet.models.GameConfig
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FieldValue
 import kotlinx.coroutines.tasks.await
@@ -81,5 +82,15 @@ class FirestoreService {
                     }
                 }
             }
+    }
+
+    suspend fun getGameConfig(gameId: String): GameConfig? {
+        return try {
+            val snapshot = firestore.collection("Games").document(gameId).get().await()
+            snapshot.toObject(GameConfig::class.java) // Convierte el documento en un objeto GameConfig
+        } catch (e: Exception) {
+            println("Error al recuperar la configuración del juego: ${e.message}")
+            null
+        }
     }
 }
