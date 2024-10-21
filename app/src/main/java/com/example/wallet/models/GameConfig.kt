@@ -5,4 +5,7 @@ data class GameConfig(
     val initialMoney: Int,
     val passGoMoney: Int,
     val isBankAutomatic: Boolean
-)
+) {
+    // Constructor vacío necesario para Firebase
+    constructor() : this(0, 0, 0, false)
+}
