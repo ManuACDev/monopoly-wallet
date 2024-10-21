@@ -21,6 +21,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -33,13 +34,12 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.wallet.models.GameConfig
 import com.example.wallet.services.FirestoreService
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.UUID
 
 @Composable
-fun GameScreen(modifier: Modifier = Modifier, navController: NavController) {
+fun GameOptions(modifier: Modifier = Modifier, navController: NavController) {
+    val coroutineScope = rememberCoroutineScope()
     Column(
         modifier = modifier
             .fillMaxSize(), // La pantalla ocupa el tamaño disponible
@@ -48,9 +48,22 @@ fun GameScreen(modifier: Modifier = Modifier, navController: NavController) {
     ) {
         // Aquí pasamos un valor a `onGameCreated` y `onBack`
         GameContent(
-            onGameCreated = {config ->
-                createGameInFirestore(config)
-                println("Partida creada con la configuración: $config")
+            onGameCreated = { config ->
+                try {
+                    coroutineScope.launch {
+                        val gameId = createGameInFirestore(config) // Llamar a la función suspend
+                        println("Partida creada con la configuración: $config")
+
+                        if (gameId.isNotEmpty()) {
+                            // Navegar a GameScreen pasando solo el gameId
+                            navController.navigate("gameScreen/$gameId")
+                        } else {
+                            println("Error: el ID de la partida es inválido.")
+                        }
+                    }
+                } catch (e: Exception) {
+                    println("Error al crear la partida: ${e.message}")
+                }
             },
             onBack = { navController.popBackStack() } // Volver atrás usando popBackStack
         )
@@ -261,7 +274,7 @@ fun GameContent(onGameCreated: (GameConfig) -> Unit, onBack: () -> Unit) {
     }
 }
 
-fun createGameInFirestore(config: GameConfig) {
+suspend fun createGameInFirestore(config: GameConfig): String {
     val firestoreService = FirestoreService()
 
     // Generar un ID único para la partida
@@ -277,13 +290,13 @@ fun createGameInFirestore(config: GameConfig) {
 
     // Llamar al servicio de Firestore para crear la partida
     // Se recomienda usar coroutines para manejar el trabajo en segundo plano
-    CoroutineScope(Dispatchers.IO).launch {
-        try {
-            firestoreService.createGame(gameId, data)
-            println("Partida guardada exitosamente en Firestore")
-        } catch (e: Exception) {
-            println("Error al guardar la partida: ${e.message}")
-        }
+    try {
+        firestoreService.createGame(gameId, data)
+        println("Partida guardada exitosamente en Firestore")
+        return gameId
+    } catch (e: Exception) {
+        println("Error al guardar la partida: ${e.message}")
+        throw e
     }
 }
 
