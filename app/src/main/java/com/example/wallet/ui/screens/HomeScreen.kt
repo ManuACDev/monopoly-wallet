@@ -1,5 +1,6 @@
 package com.example.wallet.ui.screens
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -7,15 +8,26 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.example.wallet.services.FirestoreService
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 fun HomeScreen(modifier: Modifier = Modifier, navController: NavController) {
@@ -26,12 +38,13 @@ fun HomeScreen(modifier: Modifier = Modifier, navController: NavController) {
         verticalArrangement = Arrangement.Top, // Coloca los elementos en la parte superior
         horizontalAlignment = Alignment.CenterHorizontally // Centra los elementos horizontalmente
     ) {
-        CustomCard(onCardClick = { navController.navigate("game_options") })
+        CreateCard(onCardClick = { navController.navigate("game_options") })
+        JoinCard(navController = navController)
     }
 }
 
 @Composable
-fun CustomCard(onCardClick: () -> Unit) {
+fun CreateCard(onCardClick: () -> Unit) {
 
     // Crear la tarjeta
     Card(modifier = Modifier
@@ -75,6 +88,123 @@ fun CustomCard(onCardClick: () -> Unit) {
     }
 
 }
+
+@Composable
+fun JoinCard(navController: NavController) {
+    var showJoinDialog by remember { mutableStateOf(false) }
+    var showToastMessage by remember { mutableStateOf<String?>(null) }
+    val context = LocalContext.current // Obtener el contexto fuera de composable
+    val firestoreService = FirestoreService()
+
+    showToastMessage?.let { message ->
+        LaunchedEffect(message) {
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+            showToastMessage = null // Resetear el mensaje después de mostrar el Toast
+        }
+    }
+
+    // Crear la tarjeta
+    Card(modifier = Modifier
+        .fillMaxWidth() // La tarjeta ocupará tdo el ancho
+        .height(125.dp) // Define un alto específico para la tarjeta
+        .padding(8.dp) // Padding para que la tarjeta no esté pegada a los bordes
+        .clickable { showJoinDialog = true }, // Navegar a la pantalla de opciones de juego
+        elevation = CardDefaults.cardElevation(4.dp), // Añadir una pequeña sombra
+        colors = CardDefaults.cardColors(containerColor = Color.LightGray.copy(alpha = 0.2f)), // Fondo gris claro con transparencia
+        shape = RoundedCornerShape(8.dp) // Esquinas redondeadas
+    ) {
+        // Crear una fila (Row) para colocar el "+" y el texto en la misma línea
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "Unirse a una Partida",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
+            )
+
+            Text(
+                text = "Introduce el enlace para unirte a una partida existente",
+                fontSize = 14.sp,
+                color = Color.Gray
+            )
+
+            // Mostrar el diálogo para unirse a una partida
+            if (showJoinDialog) {
+                JoinGameDialog(
+                    onDismiss = { showJoinDialog = false },
+                    onJoinGame = { gameId, playerName ->
+                        CoroutineScope(Dispatchers.IO).launch {
+                            try {
+                                firestoreService.joinGame(gameId, playerName) // Usar playerName
+                                withContext(Dispatchers.Main) {
+                                    navController.navigate("gameScreen/$gameId") // Navegar si es exitoso
+                                }
+                            } catch (e: Exception) {
+                                withContext(Dispatchers.Main) {
+                                    showToastMessage = e.message ?: "Error al unirse a la partida"
+                                }
+                            }
+                        }
+                    }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun JoinGameDialog(onDismiss: () -> Unit, onJoinGame: (String, String) -> Unit) {
+    var gameId by remember { mutableStateOf("") }
+    var playerName by remember { mutableStateOf("") }
+
+    AlertDialog(
+        onDismissRequest = { onDismiss() },
+        title = {
+            Text(text = "Unirse a una Partida")
+        },
+        text = {
+            Column {
+                Text("Introduce el enlace o código de la partida:")
+                OutlinedTextField(
+                    value = gameId,
+                    onValueChange = { gameId = it },
+                    label = { Text("Enlace o Código") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(8.dp)) // Espacio entre los campos
+                Text("Introduce tu nombre:")
+                OutlinedTextField(
+                    value = playerName,
+                    onValueChange = { playerName = it },
+                    label = { Text("Nombre") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    if (gameId.isNotEmpty() && playerName.isNotEmpty()) {
+                        onJoinGame(gameId, playerName) // Pasar tanto el gameId como el playerName
+                    }
+                }
+            ) {
+                Text("Unirse")
+            }
+        },
+        dismissButton = {
+            Button(onClick = { onDismiss() }) {
+                Text("Cancelar")
+            }
+        }
+    )
+}
+
 
 /*@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 @Composable
