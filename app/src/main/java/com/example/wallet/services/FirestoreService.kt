@@ -2,7 +2,6 @@ package com.example.wallet.services
 
 import com.example.wallet.models.GameConfig
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.FieldValue
 import kotlinx.coroutines.tasks.await
 
 
@@ -25,10 +24,39 @@ class FirestoreService {
     }
 
     // Unirse a una partida
-    suspend fun joinGame(gameId: String, playerId: String) {
+    suspend fun joinGame(gameId: String, playerName: String) {
         try {
             val gameRef = firestore.collection("Games").document(gameId)
-            gameRef.update("Players", FieldValue.arrayUnion(playerId)).await()
+            // Obtener el documento de la partida
+            val document = gameRef.get().await()
+            // Obtener la configuración del juego (numPlayers, initialMoney, etc.)
+            val gameConfig = document.toObject(GameConfig::class.java) // Obtener la configuración del juego
+
+            if (gameConfig != null) {
+                val maxPlayers = gameConfig.numPlayers // Número máximo de jugadores
+                val initialMoney = gameConfig.initialMoney // Dinero inicial por jugador
+
+                // Obtener la referencia a la subcolección "Players"
+                val playersRef = gameRef.collection("Players")
+                // Contar cuántos jugadores ya están en la partida
+                val currentPlayers = playersRef.get().await().size()
+
+                // Verificar si hay espacio para un nuevo jugador
+                if (currentPlayers < maxPlayers) {
+                    // Crear un nuevo documento en la subcolección "Players" con los datos del jugador
+                    val playerData = mapOf(
+                        "Name" to playerName,
+                        "Money" to initialMoney
+                    )
+                    playersRef.add(playerData).await()
+
+                    println("Jugador $playerName unido exitosamente a la partida con $initialMoney de dinero inicial.")
+                } else {
+                    throw Exception("Número máximo de jugadores alcanzado.")
+                }
+            } else {
+                throw Exception("La partida no existe o no se pudo obtener la configuración.")
+            }
         } catch (e: Exception) {
             // Manejar errores
             println("Error al unirse a la partida")

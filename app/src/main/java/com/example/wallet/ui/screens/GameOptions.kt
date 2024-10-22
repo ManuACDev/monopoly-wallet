@@ -304,19 +304,15 @@ suspend fun createGameInFirestore(config: GameConfig, creatorName: String): Stri
         "numPlayers" to config.numPlayers,
         "initialMoney" to config.initialMoney,
         "passGoMoney" to config.passGoMoney,
-        "isBankAutomatic" to config.isBankAutomatic,
-        "Players" to listOf(
-            mapOf(
-                "name" to creatorName,  // Nombre del creador como primer jugador
-                "money" to config.initialMoney // El dinero inicial del creador
-            )
-        )
+        "isBankAutomatic" to config.isBankAutomatic
     )
 
     // Llamar al servicio de Firestore para crear la partida
     // Se recomienda usar coroutines para manejar el trabajo en segundo plano
     try {
         firestoreService.createGame(gameId, data)
+        // Añadir al creador como primer jugador
+        firestoreService.joinGame(gameId, creatorName)
         println("Partida guardada exitosamente en Firestore")
         return gameId
     } catch (e: Exception) {
