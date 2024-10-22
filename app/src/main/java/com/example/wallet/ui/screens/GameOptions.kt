@@ -48,11 +48,11 @@ fun GameOptions(modifier: Modifier = Modifier, navController: NavController) {
     ) {
         // Aquí pasamos un valor a `onGameCreated` y `onBack`
         GameContent(
-            onGameCreated = { config ->
+            onGameCreated = { config, creatorName ->
                 try {
                     coroutineScope.launch {
-                        val gameId = createGameInFirestore(config) // Llamar a la función suspend
-                        println("Partida creada con la configuración: $config")
+                        val gameId = createGameInFirestore(config, creatorName) // Llamar a la función suspend
+                        println("Partida creada con la configuración: $config y creador: $creatorName")
 
                         if (gameId.isNotEmpty()) {
                             // Navegar a GameScreen pasando solo el gameId
@@ -73,15 +73,17 @@ fun GameOptions(modifier: Modifier = Modifier, navController: NavController) {
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
-fun GameContent(onGameCreated: (GameConfig) -> Unit, onBack: () -> Unit) {
+fun GameContent(onGameCreated: (GameConfig, String) -> Unit, onBack: () -> Unit) {
     var numPlayers by remember { mutableStateOf(2) }
     var initialMoney by remember { mutableStateOf("300000") }
     var passGoMoney by remember { mutableStateOf("40000") }
     var isBankAutomatic by remember { mutableStateOf(false) }
+    var creatorName by remember { mutableStateOf("") }
 
     val isCreateButtonEnabled = numPlayers >= 2 &&
             initialMoney.isNotEmpty() &&
-            passGoMoney.isNotEmpty()
+            passGoMoney.isNotEmpty() &&
+            creatorName.isNotEmpty()
 
     Scaffold(
         topBar = {
@@ -111,6 +113,23 @@ fun GameContent(onGameCreated: (GameConfig) -> Unit, onBack: () -> Unit) {
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(10.dp))
+            }
+
+            // Nombre del creador de la partida
+            item {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.spacedBy(15.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(text = "Nombre del Creador")
+                    OutlinedTextField(
+                        value = creatorName,
+                        onValueChange = { creatorName = it },
+                        label = { Text("Introduce tu nombre") },
+                        modifier = Modifier.fillMaxWidth(0.70f)
+                    )
+                }
             }
 
             // Número de jugadores
@@ -252,8 +271,8 @@ fun GameContent(onGameCreated: (GameConfig) -> Unit, onBack: () -> Unit) {
                 }
             }*/
 
+            // Botón para crear partida
             item {
-                // Botón para crear partida (solo habilitado si hay suficientes jugadores)
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
                     onClick = {
@@ -263,7 +282,7 @@ fun GameContent(onGameCreated: (GameConfig) -> Unit, onBack: () -> Unit) {
                             passGoMoney = passGoMoney.toInt(),
                             isBankAutomatic = isBankAutomatic
                         )
-                        onGameCreated(gameConfig) // Configuración de la partida
+                        onGameCreated(gameConfig, creatorName) // Configuración de la partida y el nombre del creador
                     },
                     enabled = isCreateButtonEnabled
                 ) {
@@ -274,7 +293,7 @@ fun GameContent(onGameCreated: (GameConfig) -> Unit, onBack: () -> Unit) {
     }
 }
 
-suspend fun createGameInFirestore(config: GameConfig): String {
+suspend fun createGameInFirestore(config: GameConfig, creatorName: String): String {
     val firestoreService = FirestoreService()
 
     // Generar un ID único para la partida
@@ -285,7 +304,13 @@ suspend fun createGameInFirestore(config: GameConfig): String {
         "numPlayers" to config.numPlayers,
         "initialMoney" to config.initialMoney,
         "passGoMoney" to config.passGoMoney,
-        "isBankAutomatic" to config.isBankAutomatic
+        "isBankAutomatic" to config.isBankAutomatic,
+        "Players" to listOf(
+            mapOf(
+                "name" to creatorName,  // Nombre del creador como primer jugador
+                "money" to config.initialMoney // El dinero inicial del creador
+            )
+        )
     )
 
     // Llamar al servicio de Firestore para crear la partida
@@ -305,8 +330,14 @@ suspend fun createGameInFirestore(config: GameConfig): String {
 @Composable
 fun GameContentPreview() {
     GameContent(
-        onGameCreated = { /* Acción al crear partida */ },
-        onBack = { /* Acción al volver */ }
+        onGameCreated = { gameConfig, creatorName ->
+            // Acción simulada al crear la partida
+            println("Game created with config: $gameConfig and creator: $creatorName")
+        },
+        onBack = {
+            // Acción simulada al volver
+            println("Back button pressed")
+        }
     )
 }
 
