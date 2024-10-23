@@ -20,23 +20,13 @@ import com.example.wallet.ui.screens.GameOptions
 import com.example.wallet.ui.screens.GameScreen
 import com.example.wallet.ui.screens.HomeScreen
 import com.example.wallet.ui.theme.MonopolyWalletTheme
+import com.example.wallet.ui.theme.Vulcan
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            /*MonopolyWalletTheme {
-                // Usamos Scaffold para gestionar la estructura de la pantalla
-                Scaffold(
-                    topBar = { CenterAlignedAppBar(title = "Monopoly Wallet") }, // Título toolbar
-                    content = { innerPadding ->
-                        HomeScreen(modifier = Modifier
-                            .padding(innerPadding)
-                            .fillMaxSize())
-                    }
-                )
-            }*/
             MyApp()
         }
     }
@@ -49,7 +39,9 @@ fun MyApp() {
 
         // Scaffold es la estructura general de la app, si tienes una barra superior, etc.
         Scaffold(
-            topBar = { CenterAlignedAppBar(title = "Monopoly Wallet") },
+            modifier = Modifier.fillMaxSize(),
+            containerColor = Vulcan,
+            topBar = { CenterAlignedAppBar(title = "Monopoly") },
             content = { innerPadding ->
                 // Sistema de navegación
                 NavHost(
