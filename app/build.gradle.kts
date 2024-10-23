@@ -66,6 +66,7 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.navigation.runtime.ktx)
     implementation(libs.androidx.navigation.compose)
+    //implementation("io.coil-kt:coil-compose:2.1.0")
 
     // Firebase
     implementation(platform("com.google.firebase:firebase-bom:33.4.0"))
