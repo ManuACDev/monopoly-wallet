@@ -15,6 +15,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.example.wallet.ui.theme.Vulcan
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -34,7 +35,7 @@ fun CenterAlignedAppBar(title: String) {
             }
         },
         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-            containerColor = Color.Black // Color de fondo negro
+            containerColor = Vulcan // Color de fondo personalizado
         ),
         modifier = Modifier
             .windowInsetsPadding(WindowInsets.statusBars)
