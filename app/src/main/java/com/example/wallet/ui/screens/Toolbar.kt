@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.ui.text.style.TextAlign
@@ -20,7 +22,7 @@ import com.example.wallet.ui.theme.Vulcan
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CenterAlignedAppBar(title: String) {
+fun CenterAlignedAppBar(title: String, showBackButton: Boolean = false, onBack: (() -> Unit)? = null) {
     TopAppBar(
         title = {
             Box(modifier = Modifier.fillMaxSize(),
@@ -32,6 +34,19 @@ fun CenterAlignedAppBar(title: String) {
                     textAlign = TextAlign.Center, // Centrar el texto horizontalmente
                     maxLines = 1
                 )
+            }
+        },
+        navigationIcon = {
+            if (showBackButton) { // Mostrar el botón de retroceso si está habilitado
+                run {
+                    IconButton(onClick = { onBack?.invoke() }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack, // Ícono de retroceso
+                            contentDescription = "Back",
+                            tint = Color.White
+                        )
+                    }
+                }
             }
         },
         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(

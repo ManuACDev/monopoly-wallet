@@ -13,6 +13,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.wallet.ui.screens.CenterAlignedAppBar
@@ -41,7 +42,18 @@ fun MyApp() {
         Scaffold(
             modifier = Modifier.fillMaxSize(),
             containerColor = Vulcan,
-            topBar = { CenterAlignedAppBar(title = "Monopoly") },
+            topBar = {
+                val currentBackStackEntry = navController.currentBackStackEntryAsState().value
+                val showBackButton = currentBackStackEntry?.destination?.route == "game_options"
+
+                CenterAlignedAppBar(
+                    title = if (showBackButton) "Game Options" else "Monopoly",
+                    showBackButton = showBackButton,
+                    onBack = {
+                        navController.popBackStack() // Acción para regresar a la pantalla anterior
+                    }
+                )
+            },
             content = { innerPadding ->
                 // Sistema de navegación
                 NavHost(
