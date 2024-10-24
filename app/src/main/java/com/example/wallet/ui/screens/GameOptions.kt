@@ -297,7 +297,7 @@ suspend fun createGameInFirestore(config: GameConfig, creatorName: String): Stri
     val firestoreService = FirestoreService()
 
     // Generar un ID único para la partida
-    val gameId = UUID.randomUUID().toString()
+    val gameId = UUID.randomUUID().toString().take(8)
 
     // Crear el mapa de datos para la partida
     val data = mapOf(
