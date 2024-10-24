@@ -2,6 +2,7 @@ package com.example.wallet.ui.screens
 
 import android.widget.Toast
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -38,137 +39,20 @@ import kotlinx.coroutines.withContext
 fun HomeScreen(modifier: Modifier = Modifier, navController: NavController) {
     // Crear la pantalla con un layout vertical
     Column(modifier = modifier
-        .fillMaxSize() // La pantalla ocupa todo el tamaño disponible
+        .fillMaxSize() // La pantalla ocupa tdo el tamaño disponible
         .padding(16.dp), // Padding a toda la pantalla
-        verticalArrangement = Arrangement.Top, // Coloca los elementos en la parte superior
+        verticalArrangement = Arrangement.SpaceEvenly, // Coloca los elementos en la parte superior
         horizontalAlignment = Alignment.CenterHorizontally // Centra los elementos horizontalmente
     ) {
         CustomScreen(navController = navController)
-        //JoinCard(navController = navController)
+        JoinScreen(navController = navController)
     }
-}
-
-@Composable
-fun JoinCard(navController: NavController) {
-    var showJoinDialog by remember { mutableStateOf(false) }
-    var showToastMessage by remember { mutableStateOf<String?>(null) }
-    val context = LocalContext.current // Obtener el contexto fuera de composable
-    val firestoreService = FirestoreService()
-
-    showToastMessage?.let { message ->
-        LaunchedEffect(message) {
-            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-            showToastMessage = null // Resetear el mensaje después de mostrar el Toast
-        }
-    }
-
-    // Crear la tarjeta
-    Card(modifier = Modifier
-        .fillMaxWidth() // La tarjeta ocupará tdo el ancho
-        .height(125.dp) // Define un alto específico para la tarjeta
-        .padding(8.dp) // Padding para que la tarjeta no esté pegada a los bordes
-        .clickable { showJoinDialog = true }, // Navegar a la pantalla de opciones de juego
-        elevation = CardDefaults.cardElevation(4.dp), // Añadir una pequeña sombra
-        colors = CardDefaults.cardColors(containerColor = Color.LightGray.copy(alpha = 0.2f)), // Fondo gris claro con transparencia
-        shape = RoundedCornerShape(8.dp) // Esquinas redondeadas
-    ) {
-        // Crear una fila (Row) para colocar el "+" y el texto en la misma línea
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = "Unirse a una Partida",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
-            )
-
-            Text(
-                text = "Introduce el enlace para unirte a una partida existente",
-                fontSize = 14.sp,
-                color = Color.Gray
-            )
-
-            // Mostrar el diálogo para unirse a una partida
-            if (showJoinDialog) {
-                JoinGameDialog(
-                    onDismiss = { showJoinDialog = false },
-                    onJoinGame = { gameId, playerName ->
-                        CoroutineScope(Dispatchers.IO).launch {
-                            try {
-                                firestoreService.joinGame(gameId, playerName) // Usar playerName
-                                withContext(Dispatchers.Main) {
-                                    navController.navigate("gameScreen/$gameId") // Navegar si es exitoso
-                                }
-                            } catch (e: Exception) {
-                                withContext(Dispatchers.Main) {
-                                    showToastMessage = e.message ?: "Error al unirse a la partida"
-                                }
-                            }
-                        }
-                    }
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun JoinGameDialog(onDismiss: () -> Unit, onJoinGame: (String, String) -> Unit) {
-    var gameId by remember { mutableStateOf("") }
-    var playerName by remember { mutableStateOf("") }
-
-    AlertDialog(
-        onDismissRequest = { onDismiss() },
-        title = {
-            Text(text = "Unirse a una Partida")
-        },
-        text = {
-            Column {
-                Text("Introduce el enlace o código de la partida:")
-                OutlinedTextField(
-                    value = gameId,
-                    onValueChange = { gameId = it },
-                    label = { Text("Enlace o Código") },
-                    modifier = Modifier.fillMaxWidth()
-                )
-                Spacer(modifier = Modifier.height(8.dp)) // Espacio entre los campos
-                Text("Introduce tu nombre:")
-                OutlinedTextField(
-                    value = playerName,
-                    onValueChange = { playerName = it },
-                    label = { Text("Nombre") },
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
-        },
-        confirmButton = {
-            Button(
-                onClick = {
-                    if (gameId.isNotEmpty() && playerName.isNotEmpty()) {
-                        onJoinGame(gameId, playerName) // Pasar tanto el gameId como el playerName
-                    }
-                }
-            ) {
-                Text("Unirse")
-            }
-        },
-        dismissButton = {
-            Button(onClick = { onDismiss() }) {
-                Text("Cancelar")
-            }
-        }
-    )
 }
 
 @Composable
 fun CustomScreen(navController: NavController) {
     Column(
         modifier = Modifier
-            .fillMaxSize()
             .padding(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -240,6 +124,200 @@ fun CustomScreen(navController: NavController) {
             )
         }
     }
+}
+
+@Composable
+fun JoinScreen(navController: NavController) {
+    var showJoinDialog by remember { mutableStateOf(false) }
+    var showToastMessage by remember { mutableStateOf<String?>(null) }
+    val context = LocalContext.current // Obtener el contexto fuera de composable
+    val firestoreService = FirestoreService()
+
+    showToastMessage?.let { message ->
+        LaunchedEffect(message) {
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+            showToastMessage = null // Resetear el mensaje después de mostrar el Toast
+        }
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(IntrinsicSize.Min) // Ajusta las alturas entre columnas
+        ) {
+            // Parte izquierda con título, subtítulo y chip
+            Column(
+                modifier = Modifier
+                    .weight(1f) // Toma tdo el espacio restante
+                    .align(Alignment.CenterVertically) // Alinea verticalmente al centro
+                    .clickable { showJoinDialog = true } // Abrir el diálogo al hacer clic en cualquier parte de la columna
+            ) {
+                Text(
+                    text = "Join a Game",
+                    color = TwilightBlue
+                )
+
+                Spacer(modifier = Modifier.height(8.dp)) // Espacio entre elementos
+
+                Text(
+                    text = "Enter the game code",
+                    color = CadetBlue
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Chip simulado con un contenedor redondeado
+                Box(
+                    modifier = Modifier
+                        .background(PickledBluewood, shape = RoundedCornerShape(16.dp))
+                        .padding(horizontal = 12.dp, vertical = 8.dp)
+                ) {
+                    Text(
+                        text = "Join a Game",
+                        color = Color.White
+                    )
+                }
+
+                // Mostrar el diálogo para unirse a una partida
+                if (showJoinDialog) {
+                    JoinGameDialog(
+                        onDismiss = { showJoinDialog = false },
+                        onJoinGame = { gameId, playerName ->
+                            CoroutineScope(Dispatchers.IO).launch {
+                                try {
+                                    firestoreService.joinGame(gameId, playerName) // Usar playerName
+                                    withContext(Dispatchers.Main) {
+                                        navController.navigate("gameScreen/$gameId") // Navegar si es exitoso
+                                    }
+                                } catch (e: Exception) {
+                                    withContext(Dispatchers.Main) {
+                                        showToastMessage = e.message ?: "Error al unirse a la partida"
+                                    }
+                                }
+                            }
+                        }
+                    )
+                }
+            }
+
+            // Parte derecha con la imagen
+            Image(
+                painter = painterResource(id = R.drawable.joingame),
+                contentDescription = "Game Image",
+                contentScale = ContentScale.FillBounds,
+                modifier = Modifier
+                    .size(118.dp) // Tamaño de la imagen
+                    .clip(RoundedCornerShape(14.dp))
+                    .align(Alignment.CenterVertically) // Alinear verticalmente al centro
+            )
+        }
+    }
+}
+
+@Composable
+fun JoinGameDialog(onDismiss: () -> Unit, onJoinGame: (String, String) -> Unit) {
+    var gameId by remember { mutableStateOf("") }
+    var playerName by remember { mutableStateOf("") }
+
+    AlertDialog(
+        onDismissRequest = { onDismiss() },
+        containerColor = Vulcan,
+        title = {
+            Text(
+                text = "Join a game",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                color = TwilightBlue
+            )
+        },
+        text = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp), // Añadir padding para el contenido
+                horizontalAlignment = Alignment.CenterHorizontally // Centrar horizontalmente
+            ) {
+                OutlinedTextField(
+                    value = playerName,
+                    onValueChange = { playerName = it },
+                    placeholder = {
+                        Text("Player Name", color = Nepal) // Placeholder en color blanco
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(8.dp),
+                    colors = TextFieldDefaults.colors(
+                        focusedTextColor = Nepal, // Color del texto cuando está enfocado
+                        unfocusedTextColor = Nepal, // Color del texto cuando no está enfocado
+                        cursorColor = Nepal, // Color del cursor
+                        focusedContainerColor = PickledBluewood, // Color de fondo cuando está enfocado
+                        unfocusedContainerColor = PickledBluewood, // Color de fondo cuando no está enfocado
+                        focusedIndicatorColor = PickledBluewood, // Color del borde cuando está enfocado
+                        unfocusedIndicatorColor = PickledBluewood // Color del borde cuando no está enfocado
+                    )
+                )
+
+                Spacer(modifier = Modifier.height(20.dp)) // Espacio entre campos
+
+                OutlinedTextField(
+                    value = gameId,
+                    onValueChange = { gameId = it },
+                    placeholder = {
+                        Text("Game Code", color = Nepal) // Placeholder en color blanco
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(8.dp),
+                    colors = TextFieldDefaults.colors(
+                        focusedTextColor = Nepal, // Color del texto cuando está enfocado
+                        unfocusedTextColor = Nepal, // Color del texto cuando no está enfocado
+                        cursorColor = Nepal, // Color del cursor
+                        focusedContainerColor = PickledBluewood, // Color de fondo cuando está enfocado
+                        unfocusedContainerColor = PickledBluewood, // Color de fondo cuando no está enfocado
+                        focusedIndicatorColor = PickledBluewood, // Color del borde cuando está enfocado
+                        unfocusedIndicatorColor = PickledBluewood // Color del borde cuando no está enfocado
+                    )
+                )
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    if (gameId.isNotEmpty() && playerName.isNotEmpty()) {
+                        onJoinGame(gameId, playerName) // Pasar tanto el gameId como el playerName
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(45.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = RoyalBlue)
+            ) {
+                Text(
+                    text = "Join",
+                    fontSize = 17.sp,
+                    color = Color.White
+                )
+            }
+        },
+        dismissButton = {
+            Button(
+                onClick = { onDismiss() },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(45.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color.Gray)
+            ) {
+                Text(
+                    text = "Cancel",
+                    fontSize = 17.sp,
+                    color = Color.White
+                )
+            }
+        }
+    )
 }
 
 @Preview(showBackground = true)
