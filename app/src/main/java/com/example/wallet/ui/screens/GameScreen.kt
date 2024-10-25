@@ -1,7 +1,10 @@
 package com.example.wallet.ui.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,7 +16,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.filled.Chat
+import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.AccountBalance
 import androidx.compose.material.icons.filled.AttachMoney
+import androidx.compose.material.icons.filled.Casino
 import androidx.compose.material.icons.filled.People
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -51,6 +58,7 @@ fun GameScreen(modifier: Modifier = Modifier, gameId: String) {
         horizontalAlignment = Alignment.CenterHorizontally // Centra los elementos horizontalmente
     ) {
         GameDetails(gameId = gameId)
+        ActionsGame()
     }
 }
 
@@ -101,7 +109,6 @@ fun GameDetails(gameId: String) {
 
     Column(
         modifier = Modifier
-            .fillMaxSize()
             .padding(8.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
@@ -162,7 +169,134 @@ fun GameDetails(gameId: String) {
 
 @Composable
 fun ActionsGame() {
+    // Sección Game Action
+    Column(
+        modifier = Modifier
+            .padding(8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Text(
+            text = "Game Actions",
+            fontSize = 20.sp,
+            textAlign = TextAlign.Left,
+            fontWeight = FontWeight.Bold,
+            color = TwilightBlue,
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        GameActionRow(
+            icon = Icons.AutoMirrored.Filled.Send,
+            text = "Send Money",
+            modifier = Modifier.weight(1f)
+        )
+        GameActionRow(
+            icon = Icons.Default.AccountBalance,
+            text = "Access Bank",
+            modifier = Modifier.weight(1f)
+        )
+        GameActionRow(
+            icon = Icons.Default.Casino,
+            text = "Roll Dice",
+            modifier = Modifier.weight(1f)
+        )
+        GameActionRow(
+            icon = Icons.AutoMirrored.Filled.Chat,
+            text = "Live Chat",
+            modifier = Modifier.weight(1f)
+        )
+    }
+}
+
+// Composable para cada card de Game Options
+@Composable
+fun GameOptionCard(value: String, title: String, icon: ImageVector, modifier: Modifier = Modifier) {
+    Card(
+        modifier = modifier
+            .width(200.dp)
+            .height(140.dp)
+            .border(1.dp, color= Nepal, shape = RoundedCornerShape(16.dp)),
+        colors = CardDefaults.cardColors(containerColor = Mirage), // Fondo común
+        elevation = CardDefaults.cardElevation(4.dp),
+        shape = RoundedCornerShape(16.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.Start,
+            verticalArrangement = Arrangement.SpaceEvenly // spacedBy(8.dp)
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = "Icon",
+                tint = Nepal,
+                modifier = Modifier.size(28.dp)
+            )
+            Text(
+                text = title,
+                fontSize = 18.sp,
+                color = TwilightBlue
+            )
+            Text(
+                text = value,
+                fontSize = 18.sp,
+                color = Nepal
+            )
+        }
+    }
+}
+
+@Composable
+fun GameActionRow(icon: ImageVector, text: String, modifier: Modifier = Modifier) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .clickable { /* Acción cuando se hace clic */ },
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        // Icono con fondo personalizado
+        Box(
+            modifier = Modifier
+                .size(48.dp)
+                .background(Mirage, shape = RoundedCornerShape(8.dp)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = "Icon",
+                tint = Nepal,
+                modifier = Modifier.size(28.dp)
+            )
+        }
+
+        // Texto de la acción
+        Text(
+            text = text,
+            fontSize = 18.sp,
+            color = TwilightBlue
+        )
+
+        // Flecha
+        Text(
+            text = ">",
+            fontSize = 35.sp,
+            color = Nepal
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun GameScreenPreview() {
+    //val navController = rememberNavController()
+    GameScreen(gameId = "previewGameId")
+}
+
+/*
     //var sendAmount by remember { mutableStateOf("") }
+
 
     /*
     // Función para enviar dinero
@@ -242,14 +376,9 @@ fun ActionsGame() {
     ) {
         Text("Tirar Dados")
     }*/
+*/
 
-    // Sección Game Action
-    Text(
-        text = "Game Action",
-        fontSize = 20.sp,
-        fontWeight = FontWeight.Bold
-    )
-    /*
+/*
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -258,6 +387,7 @@ fun ActionsGame() {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Mostrar dinero del jugador
+        val playerMoney = 40000
         Text(
             text = "Dinero disponible: $playerMoney",
             fontSize = 20.sp,
@@ -292,51 +422,5 @@ fun ActionsGame() {
         ) {
             Text("Tirar Dados")
         }
-    }*/
-}
-
-// Composable para cada card de Game Options
-@Composable
-fun GameOptionCard(value: String, title: String, icon: ImageVector, modifier: Modifier = Modifier) {
-    Card(
-        modifier = modifier
-            .width(200.dp)
-            .height(140.dp)
-            .border(1.dp, color= Nepal, shape = RoundedCornerShape(16.dp)),
-        colors = CardDefaults.cardColors(containerColor = Mirage), // Fondo común
-        elevation = CardDefaults.cardElevation(4.dp),
-        shape = RoundedCornerShape(16.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.Start,
-            verticalArrangement = Arrangement.SpaceEvenly // spacedBy(8.dp)
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = "Icon",
-                tint = Nepal,
-                modifier = Modifier.size(28.dp)
-            )
-            Text(
-                text = title,
-                fontSize = 18.sp,
-                color = TwilightBlue
-            )
-            Text(
-                text = value,
-                fontSize = 18.sp,
-                color = Nepal
-            )
-        }
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GameScreenPreview() {
-    //val navController = rememberNavController()
-    GameScreen(gameId = "previewGameId")
-}
+*/
