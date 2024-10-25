@@ -17,3 +17,4 @@ val AthensGray = Color(0xFFF2F3F7)
 val RoyalBlue = Color(0xFF3c71e8)
 val PickledBluewood = Color(0xFF253148)
 val Nepal = Color(0xFF97A5C0)
+val Mirage = Color(0xFF1A2332) // Fondo Game Card Option
