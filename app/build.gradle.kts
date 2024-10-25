@@ -67,9 +67,11 @@ dependencies {
     implementation(libs.androidx.navigation.runtime.ktx)
     implementation(libs.androidx.navigation.compose)
     //implementation("io.coil-kt:coil-compose:2.1.0")
+    implementation("androidx.compose.material:material-icons-extended:1.7.4")
+
 
     // Firebase
-    implementation(platform("com.google.firebase:firebase-bom:33.4.0"))
+    implementation(platform("com.google.firebase:firebase-bom:33.5.1"))
     implementation(libs.firebase.firestore.ktx)
 
     // Otros test y depencias necesarias
