@@ -41,6 +41,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.example.wallet.models.GameConfig
 import com.example.wallet.services.FirestoreService
 import com.example.wallet.ui.theme.Mirage
@@ -49,7 +51,7 @@ import com.example.wallet.ui.theme.TwilightBlue
 import kotlinx.coroutines.launch
 
 @Composable
-fun GameScreen(modifier: Modifier = Modifier, gameId: String) {
+fun GameScreen(modifier: Modifier = Modifier, gameId: String, navController: NavController) {
     // Crear la pantalla con un layout vertical
     Column(modifier = modifier
         .fillMaxSize() // La pantalla ocupa tdo el tamaño disponible
@@ -58,7 +60,7 @@ fun GameScreen(modifier: Modifier = Modifier, gameId: String) {
         horizontalAlignment = Alignment.CenterHorizontally // Centra los elementos horizontalmente
     ) {
         GameDetails(gameId = gameId)
-        ActionsGame()
+        ActionsGame(navController = navController)
     }
 }
 
@@ -168,7 +170,7 @@ fun GameDetails(gameId: String) {
 }
 
 @Composable
-fun ActionsGame() {
+fun ActionsGame(navController: NavController) {
     // Sección Game Action
     Column(
         modifier = Modifier
@@ -187,21 +189,25 @@ fun ActionsGame() {
         GameActionRow(
             icon = Icons.AutoMirrored.Filled.Send,
             text = "Send Money",
+            onClick = { navController.navigate("roll_dice") },
             modifier = Modifier.weight(1f)
         )
         GameActionRow(
             icon = Icons.Default.AccountBalance,
             text = "Access Bank",
+            onClick = { /* Navegar a Access Bank Screen */ },
             modifier = Modifier.weight(1f)
         )
         GameActionRow(
             icon = Icons.Default.Casino,
             text = "Roll Dice",
+            onClick = { /* Navegar a Roll Dice Screen */ },
             modifier = Modifier.weight(1f)
         )
         GameActionRow(
             icon = Icons.AutoMirrored.Filled.Chat,
             text = "Live Chat",
+            onClick = { /* Navegar a Live Chat Screen */ },
             modifier = Modifier.weight(1f)
         )
     }
@@ -247,12 +253,12 @@ fun GameOptionCard(value: String, title: String, icon: ImageVector, modifier: Mo
 }
 
 @Composable
-fun GameActionRow(icon: ImageVector, text: String, modifier: Modifier = Modifier) {
+fun GameActionRow(icon: ImageVector, text: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
     Row(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp)
-            .clickable { /* Acción cuando se hace clic */ },
+            .clickable { onClick() },
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
@@ -290,8 +296,9 @@ fun GameActionRow(icon: ImageVector, text: String, modifier: Modifier = Modifier
 @Preview(showBackground = true)
 @Composable
 fun GameScreenPreview() {
-    //val navController = rememberNavController()
-    GameScreen(gameId = "previewGameId")
+    val navController = rememberNavController()
+    GameScreen(
+        gameId = "previewGameId", navController = navController)
 }
 
 /*
