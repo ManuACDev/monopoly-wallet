@@ -84,7 +84,12 @@ fun MyApp() {
                     ) { backStackEntry ->
                         val gameId = backStackEntry.arguments?.getString("gameId")
                         if (gameId != null) {
-                            GameScreen(gameId = gameId)
+                            GameScreen(
+                            modifier = Modifier
+                                .padding(innerPadding)
+                                .fillMaxSize(),
+                            gameId = gameId
+                            )
                         }
                     }
                 }
