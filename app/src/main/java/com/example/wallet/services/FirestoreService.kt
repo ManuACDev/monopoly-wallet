@@ -78,6 +78,20 @@ class FirestoreService {
             }
     }
 
+    fun getPlayersUpdates(gameId: String, onGameUpdated: (Map<String, Any>) -> Unit) {
+        firestore.collection("Games")
+            .document(gameId)
+            .collection("Players")
+            .addSnapshotListener { snapshots, error ->
+                if (error != null) {
+                    println("Error al escuchar los jugadores conectados: ${error.message}")
+                    return@addSnapshotListener
+                }
+                val playerCount = snapshots?.documents?.size ?: 0
+                onGameUpdated(mapOf("numPlayers" to playerCount))
+            }
+    }
+
     // Enviar un mensaje al chat de la partida
     suspend fun sendChatMessage(gameId: String, message: String) {
         try {
