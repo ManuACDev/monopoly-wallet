@@ -20,6 +20,7 @@ import com.example.wallet.ui.screens.CenterAlignedAppBar
 import com.example.wallet.ui.screens.GameOptions
 import com.example.wallet.ui.screens.GameScreen
 import com.example.wallet.ui.screens.HomeScreen
+import com.example.wallet.ui.screens.actions.RollDiceScreen
 import com.example.wallet.ui.theme.MonopolyWalletTheme
 import com.example.wallet.ui.theme.Vulcan
 
@@ -88,9 +89,18 @@ fun MyApp() {
                             modifier = Modifier
                                 .padding(innerPadding)
                                 .fillMaxSize(),
-                            gameId = gameId
+                            gameId = gameId,
+                            navController = navController
                             )
                         }
+                    }
+
+                    composable("roll_dice") {
+                        RollDiceScreen(
+                            modifier = Modifier
+                                .padding(innerPadding)
+                                .fillMaxSize()
+                        )
                     }
                 }
             }
