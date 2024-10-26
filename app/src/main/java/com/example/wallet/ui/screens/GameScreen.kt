@@ -189,7 +189,7 @@ fun ActionsGame(navController: NavController) {
         GameActionRow(
             icon = Icons.AutoMirrored.Filled.Send,
             text = "Send Money",
-            onClick = { navController.navigate("roll_dice") },
+            onClick = { /* Navegar a Send Money Screen */ },
             modifier = Modifier.weight(1f)
         )
         GameActionRow(
@@ -201,7 +201,7 @@ fun ActionsGame(navController: NavController) {
         GameActionRow(
             icon = Icons.Default.Casino,
             text = "Roll Dice",
-            onClick = { /* Navegar a Roll Dice Screen */ },
+            onClick = { navController.navigate("roll_dice") },
             modifier = Modifier.weight(1f)
         )
         GameActionRow(
