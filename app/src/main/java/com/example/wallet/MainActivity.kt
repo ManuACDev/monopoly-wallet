@@ -46,9 +46,14 @@ fun MyApp() {
             topBar = {
                 val currentBackStackEntry = navController.currentBackStackEntryAsState().value
                 val showBackButton = currentBackStackEntry?.destination?.route == "game_options"
+                        || currentBackStackEntry?.destination?.route == "roll_dice"
 
                 CenterAlignedAppBar(
-                    title = if (showBackButton) "Game Options" else "Monopoly",
+                    title = when {
+                        showBackButton && currentBackStackEntry?.destination?.route == "game_options" -> "Game Options"
+                        showBackButton && currentBackStackEntry?.destination?.route == "roll_dice" -> "Roll Dice"
+                        else -> "Monopoly"
+                    },
                     showBackButton = showBackButton,
                     onBack = {
                         navController.popBackStack() // Acción para regresar a la pantalla anterior
