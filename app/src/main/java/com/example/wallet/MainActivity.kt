@@ -45,13 +45,13 @@ fun MyApp() {
             containerColor = Vulcan,
             topBar = {
                 val currentBackStackEntry = navController.currentBackStackEntryAsState().value
-                val showBackButton = currentBackStackEntry?.destination?.route == "game_options"
-                        || currentBackStackEntry?.destination?.route == "roll_dice"
+                val route = currentBackStackEntry?.destination?.route
+                val showBackButton = route == "game_options" || route == "roll_dice"
 
                 CenterAlignedAppBar(
-                    title = when {
-                        showBackButton && currentBackStackEntry?.destination?.route == "game_options" -> "Game Options"
-                        showBackButton && currentBackStackEntry?.destination?.route == "roll_dice" -> "Roll Dice"
+                    title = when (route) {
+                        "game_options" -> "Game Options"
+                        "roll_dice" -> "Roll Dice"
                         else -> "Monopoly"
                     },
                     showBackButton = showBackButton,
