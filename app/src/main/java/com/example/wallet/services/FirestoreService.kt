@@ -93,10 +93,12 @@ class FirestoreService {
     }
 
     // Enviar un mensaje al chat de la partida
-    suspend fun sendChatMessage(gameId: String, message: String) {
+    suspend fun sendChatMessage(gameId: String, playerName: String, message: String, type: String) {
         try {
             val messageData = mapOf(
+                "playerName" to playerName,
                 "message" to message,
+                "messageType" to type,
                 "timestamp" to System.currentTimeMillis()
             )
             firestore.collection("Games")
