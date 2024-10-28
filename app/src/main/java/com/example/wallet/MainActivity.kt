@@ -97,6 +97,9 @@ fun MyApp(authService: AuthService, firestoreService: FirestoreService) {
                 ) {
                     composable("auth") {
                         AuthScreen(
+                            modifier = Modifier
+                                .padding(innerPadding)
+                                .fillMaxSize(),
                             onLoginSuccess = {
                                 isAuthenticated.value = true
                             },

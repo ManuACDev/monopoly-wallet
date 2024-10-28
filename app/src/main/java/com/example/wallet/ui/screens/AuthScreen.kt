@@ -17,15 +17,15 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 @Composable
-fun AuthScreen(onLoginSuccess: () -> Unit, authService: AuthService) {
+fun AuthScreen(modifier: Modifier = Modifier, onLoginSuccess: () -> Unit, authService: AuthService) {
     var selectedTab by remember { mutableStateOf(AuthTab.Login) }
 
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Tabs para Login y Register
         TabRow(selectedTabIndex = selectedTab.ordinal) {
@@ -57,7 +57,12 @@ fun LoginTab(onLoginSuccess: () -> Unit, authService: AuthService) {
     var password by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(
+        modifier = Modifier
+            .padding(8.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
         Text("Login", fontSize = 20.sp, modifier = Modifier.padding(bottom = 16.dp))
 
         TextField(
@@ -103,7 +108,12 @@ fun RegisterTab(onRegisterSuccess: () -> Unit, authService: AuthService) {
     var password by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(
+        modifier = Modifier
+            .padding(8.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
         Text("Register", fontSize = 20.sp, modifier = Modifier.padding(bottom = 16.dp))
 
         TextField(
