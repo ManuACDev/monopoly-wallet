@@ -138,4 +138,26 @@ class FirestoreService {
             null
         }
     }
+
+    suspend fun getPlayerName(gameId: String, uid: String): String? {
+        return try {
+            val playersSnapshot  = firestore.collection("Games")
+                .document(gameId)
+                .collection("Players")
+                .get()
+                .await()
+
+            // Buscar el documento que tenga el uid como clave
+            for (document in playersSnapshot.documents) {
+                val playerUid = document.getString("Uid") // Recuperar el campo uid del documento
+                if (playerUid == uid) { // Comparar el campo uid con el uid proporcionado
+                    return document.getString("Name") // Retornar el nombre del jugador
+                }
+            }
+            "Invitado"
+        } catch (e: Exception) {
+            println("Error al recuperar el nombre del jugador: ${e.message}")
+            "Invitado"
+        }
+    }
 }
