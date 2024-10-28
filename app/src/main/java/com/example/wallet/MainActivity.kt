@@ -28,6 +28,8 @@ import com.example.wallet.ui.screens.HomeScreen
 import com.example.wallet.ui.screens.actions.RollDiceScreen
 import com.example.wallet.ui.theme.MonopolyWalletTheme
 import com.example.wallet.ui.theme.Vulcan
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class MainActivity : ComponentActivity() {
     private val authService = AuthService()
@@ -45,7 +47,7 @@ fun MyApp(authService: AuthService) {
     MonopolyWalletTheme {
         val navController = rememberNavController()
         // Obtenemos el estado de autenticación
-        val isAuthenticated = remember { mutableStateOf(authService.isUserAuthenticated()) }
+        var isAuthenticated = remember { mutableStateOf(authService.isUserAuthenticated()) }
 
         LaunchedEffect(isAuthenticated.value) {
             if (isAuthenticated.value) {
@@ -67,6 +69,7 @@ fun MyApp(authService: AuthService) {
                 val currentBackStackEntry = navController.currentBackStackEntryAsState().value
                 val route = currentBackStackEntry?.destination?.route
                 val showBackButton = route == "game_options" || route == "roll_dice"
+                val showLogoutButton = route == "home"
 
                 CenterAlignedAppBar(
                     title = when (route) {
@@ -77,6 +80,11 @@ fun MyApp(authService: AuthService) {
                     showBackButton = showBackButton,
                     onBack = {
                         navController.popBackStack() // Acción para regresar a la pantalla anterior
+                    },
+                    showLogoutButton = showLogoutButton,
+                    onLogout = {
+                        authService.logout()
+                        isAuthenticated.value = false
                     }
                 )
             },
