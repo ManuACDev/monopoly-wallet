@@ -24,7 +24,7 @@ class FirestoreService {
     }
 
     // Unirse a una partida
-    suspend fun joinGame(gameId: String, playerName: String) {
+    suspend fun joinGame(gameId: String, playerName: String, userId: String) {
         try {
             val gameRef = firestore.collection("Games").document(gameId)
             // Obtener el documento de la partida
@@ -46,7 +46,8 @@ class FirestoreService {
                     // Crear un nuevo documento en la subcolección "Players" con los datos del jugador
                     val playerData = mapOf(
                         "Name" to playerName,
-                        "Money" to initialMoney
+                        "Money" to initialMoney,
+                        "Uid" to userId
                     )
                     playersRef.add(playerData).await()
 

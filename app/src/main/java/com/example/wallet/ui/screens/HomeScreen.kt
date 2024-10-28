@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.wallet.R
+import com.example.wallet.services.AuthService
 import com.example.wallet.services.FirestoreService
 import com.example.wallet.ui.theme.*
 import kotlinx.coroutines.CoroutineScope
@@ -132,6 +133,7 @@ fun JoinScreen(navController: NavController) {
     var showToastMessage by remember { mutableStateOf<String?>(null) }
     val context = LocalContext.current // Obtener el contexto fuera de composable
     val firestoreService = FirestoreService()
+    val authService = AuthService()
 
     showToastMessage?.let { message ->
         LaunchedEffect(message) {
@@ -190,9 +192,12 @@ fun JoinScreen(navController: NavController) {
                         onJoinGame = { gameId, playerName ->
                             CoroutineScope(Dispatchers.IO).launch {
                                 try {
-                                    firestoreService.joinGame(gameId, playerName) // Usar playerName
-                                    withContext(Dispatchers.Main) {
-                                        navController.navigate("gameScreen/$gameId") // Navegar si es exitoso
+                                    val userId = authService.currentUser?.uid
+                                    if (userId != null) {
+                                        firestoreService.joinGame(gameId, playerName, userId) // Usar playerName
+                                        withContext(Dispatchers.Main) {
+                                            navController.navigate("gameScreen/$gameId") // Navegar si es exitoso
+                                        }
                                     }
                                 } catch (e: Exception) {
                                     withContext(Dispatchers.Main) {

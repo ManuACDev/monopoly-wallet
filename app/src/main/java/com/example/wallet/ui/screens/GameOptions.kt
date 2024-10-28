@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.wallet.models.GameConfig
+import com.example.wallet.services.AuthService
 import com.example.wallet.services.FirestoreService
 import com.example.wallet.ui.theme.*
 import kotlinx.coroutines.launch
@@ -59,7 +60,7 @@ fun GameOptions(modifier: Modifier = Modifier, navController: NavController) {
                         val gameId = createGameInFirestore(config, creatorName) // Llamar a la función suspend
                         println("Partida creada con la configuración: $config y creador: $creatorName")
 
-                        if (gameId.isNotEmpty()) {
+                        if (gameId != null) {
                             // Navegar a GameScreen pasando solo el gameId
                             navController.navigate("gameScreen/$gameId")
                         } else {
@@ -370,8 +371,9 @@ fun GameContent(onGameCreated: (GameConfig, String) -> Unit) {
     } // Cierra LazyColumn
 }
 
-suspend fun createGameInFirestore(config: GameConfig, creatorName: String): String {
+suspend fun createGameInFirestore(config: GameConfig, creatorName: String): String? {
     val firestoreService = FirestoreService()
+    val authService = AuthService()
 
     // Generar un ID único para la partida
     val gameId = UUID.randomUUID().toString().take(8)
@@ -389,9 +391,15 @@ suspend fun createGameInFirestore(config: GameConfig, creatorName: String): Stri
     try {
         firestoreService.createGame(gameId, data)
         // Añadir al creador como primer jugador
-        firestoreService.joinGame(gameId, creatorName)
-        println("Partida guardada exitosamente en Firestore")
-        return gameId
+        val userId = authService.currentUser?.uid
+        if (userId != null) {
+            firestoreService.joinGame(gameId, creatorName, userId)
+            println("Partida guardada exitosamente en Firestore")
+            return gameId
+        } else {
+            println("No se pudo obtener el ID de usuario. El jugador no puede unirse a la partida.")
+            return null
+        }
     } catch (e: Exception) {
         println("Error al guardar la partida: ${e.message}")
         throw e
