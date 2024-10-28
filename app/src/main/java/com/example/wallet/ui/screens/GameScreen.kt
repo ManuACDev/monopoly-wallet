@@ -220,7 +220,7 @@ fun ActionsGame(navController: NavController, gameId: String, playerName: String
         GameActionRow(
             icon = Icons.AutoMirrored.Filled.Chat,
             text = "Live Chat",
-            onClick = { /* Navegar a Live Chat Screen */ },
+            onClick = { navController.navigate("live_chat/$gameId") },
             modifier = Modifier.weight(1f)
         )
     }
