@@ -1,16 +1,26 @@
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.EnhancedEncryption
 import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.*
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import com.example.wallet.services.AuthService
+import com.example.wallet.ui.theme.Nepal
+import com.example.wallet.ui.theme.PickledBluewood
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -63,22 +73,61 @@ fun LoginTab(onLoginSuccess: () -> Unit, authService: AuthService) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("Login", fontSize = 20.sp, modifier = Modifier.padding(bottom = 16.dp))
-
-        TextField(
+        OutlinedTextField(
             value = email,
             onValueChange = { email = it },
-            label = { Text("Email") },
-            modifier = Modifier.fillMaxWidth()
+            placeholder = {
+                Text("Your Email", color = Nepal)
+            },
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(8.dp),
+            trailingIcon = {
+                Icon(
+                    imageVector = Icons.Default.Email, // Icono de email
+                    contentDescription = "Email Icon",
+                    tint = Nepal // Cambia el color del ícono si es necesario
+                )
+            },
+            colors = TextFieldDefaults.colors(
+                focusedTextColor = Nepal, // Color del texto cuando está enfocado
+                unfocusedTextColor = Nepal, // Color del texto cuando no está enfocado
+                cursorColor = Nepal, // Color del cursor
+                focusedContainerColor = PickledBluewood, // Color de fondo cuando está enfocado
+                unfocusedContainerColor = PickledBluewood, // Color de fondo cuando no está enfocado
+                focusedIndicatorColor = PickledBluewood, // Color del borde cuando está enfocado
+                unfocusedIndicatorColor = PickledBluewood // Color del borde cuando no está enfocado
+            )
         )
-        Spacer(modifier = Modifier.height(8.dp))
 
-        TextField(
+        Spacer(modifier = Modifier.height(14.dp))
+
+        OutlinedTextField(
             value = password,
             onValueChange = { password = it },
-            label = { Text("Password") },
-            modifier = Modifier.fillMaxWidth()
+            placeholder = {
+                Text("Your Password", color = Nepal)
+            },
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(8.dp),
+            trailingIcon = {
+                Icon(
+                    imageVector = Icons.Default.EnhancedEncryption, // Icono de candado
+                    contentDescription = "Encryption Icon",
+                    tint = Nepal // Cambia el color del ícono si es necesario
+                )
+            },
+            colors = TextFieldDefaults.colors(
+                focusedTextColor = Nepal, // Color del texto cuando está enfocado
+                unfocusedTextColor = Nepal, // Color del texto cuando no está enfocado
+                cursorColor = Nepal, // Color del cursor
+                focusedContainerColor = PickledBluewood, // Color de fondo cuando está enfocado
+                unfocusedContainerColor = PickledBluewood, // Color de fondo cuando no está enfocado
+                focusedIndicatorColor = PickledBluewood, // Color del borde cuando está enfocado
+                unfocusedIndicatorColor = PickledBluewood // Color del borde cuando no está enfocado
+            ),
+            visualTransformation = PasswordVisualTransformation()
         )
+
         Spacer(modifier = Modifier.height(16.dp))
 
         Button(onClick = {
