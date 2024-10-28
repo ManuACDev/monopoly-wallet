@@ -26,6 +26,7 @@ import com.example.wallet.ui.screens.CenterAlignedAppBar
 import com.example.wallet.ui.screens.GameOptions
 import com.example.wallet.ui.screens.GameScreen
 import com.example.wallet.ui.screens.HomeScreen
+import com.example.wallet.ui.screens.actions.LiveChatScreen
 import com.example.wallet.ui.screens.actions.RollDiceScreen
 import com.example.wallet.ui.theme.MonopolyWalletTheme
 import com.example.wallet.ui.theme.Vulcan
@@ -47,7 +48,7 @@ fun MyApp(authService: AuthService, firestoreService: FirestoreService) {
     MonopolyWalletTheme {
         val navController = rememberNavController()
         // Obtenemos el estado de autenticación
-        var isAuthenticated = remember { mutableStateOf(authService.isUserAuthenticated()) }
+        val isAuthenticated = remember { mutableStateOf(authService.isUserAuthenticated()) }
 
         LaunchedEffect(isAuthenticated.value) {
             if (isAuthenticated.value) {
@@ -151,6 +152,21 @@ fun MyApp(authService: AuthService, firestoreService: FirestoreService) {
                                 gameId = gameId,
                                 playerName = playerName,
                                 firestoreService = firestoreService
+                            )
+                        }
+                    }
+
+                    composable(
+                        "live_chat/{gameId}",
+                        arguments = listOf(navArgument("gameId") { type = NavType.StringType })
+                    ) { backStackEntry ->
+                        val gameId = backStackEntry.arguments?.getString("gameId")
+                        if (gameId != null) {
+                            LiveChatScreen(
+                                modifier = Modifier
+                                    .padding(innerPadding)
+                                    .fillMaxSize(),
+                                gameId = gameId
                             )
                         }
                     }
