@@ -21,6 +21,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.wallet.services.AuthService
+import com.example.wallet.services.FirestoreService
 import com.example.wallet.ui.screens.CenterAlignedAppBar
 import com.example.wallet.ui.screens.GameOptions
 import com.example.wallet.ui.screens.GameScreen
@@ -28,22 +29,21 @@ import com.example.wallet.ui.screens.HomeScreen
 import com.example.wallet.ui.screens.actions.RollDiceScreen
 import com.example.wallet.ui.theme.MonopolyWalletTheme
 import com.example.wallet.ui.theme.Vulcan
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 class MainActivity : ComponentActivity() {
     private val authService = AuthService()
+    private val firestoreService = FirestoreService()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            MyApp(authService = authService)
+            MyApp(authService = authService, firestoreService = firestoreService)
         }
     }
 }
 
 @Composable
-fun MyApp(authService: AuthService) {
+fun MyApp(authService: AuthService, firestoreService: FirestoreService) {
     MonopolyWalletTheme {
         val navController = rememberNavController()
         // Obtenemos el estado de autenticación
@@ -137,12 +137,22 @@ fun MyApp(authService: AuthService) {
                         }
                     }
 
-                    composable("roll_dice") {
-                        RollDiceScreen(
-                            modifier = Modifier
-                                .padding(innerPadding)
-                                .fillMaxSize()
+                    composable(
+                        "roll_dice/{gameId}/{playerName}",
+                        arguments = listOf(
+                            navArgument("gameId") { type = NavType.StringType },
+                            navArgument("playerName") { type = NavType.StringType }
                         )
+                    ) { backStackEntry ->
+                        val gameId = backStackEntry.arguments?.getString("gameId")
+                        val playerName = backStackEntry.arguments?.getString("playerName")
+                        if (gameId != null && playerName != null) {
+                            RollDiceScreen(
+                                gameId = gameId,
+                                playerName = playerName,
+                                firestoreService = firestoreService
+                            )
+                        }
                     }
                 }
             }

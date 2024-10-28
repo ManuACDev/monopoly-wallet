@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.wallet.models.GameConfig
+import com.example.wallet.services.AuthService
 import com.example.wallet.services.FirestoreService
 import com.example.wallet.ui.theme.Mirage
 import com.example.wallet.ui.theme.Nepal
@@ -52,6 +53,17 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun GameScreen(modifier: Modifier = Modifier, gameId: String, navController: NavController) {
+    var playerName by remember { mutableStateOf<String?>(null) }
+    val authService = AuthService()
+    val uid = authService.currentUser?.uid
+
+    LaunchedEffect(gameId, uid) {
+        uid?.let {
+            val firestoreService = FirestoreService()
+            playerName = firestoreService.getPlayerName(gameId, it)
+        }
+    }
+
     // Crear la pantalla con un layout vertical
     Column(modifier = modifier
         .fillMaxSize() // La pantalla ocupa tdo el tamaño disponible
@@ -59,8 +71,9 @@ fun GameScreen(modifier: Modifier = Modifier, gameId: String, navController: Nav
         verticalArrangement = Arrangement.SpaceEvenly, // Separar elementos
         horizontalAlignment = Alignment.CenterHorizontally // Centra los elementos horizontalmente
     ) {
+
         GameDetails(gameId = gameId)
-        ActionsGame(navController = navController)
+        playerName?.let { ActionsGame(navController = navController, gameId = gameId, playerName = it) }
     }
 }
 
@@ -170,7 +183,7 @@ fun GameDetails(gameId: String) {
 }
 
 @Composable
-fun ActionsGame(navController: NavController) {
+fun ActionsGame(navController: NavController, gameId: String, playerName: String) {
     // Sección Game Action
     Column(
         modifier = Modifier
@@ -201,7 +214,7 @@ fun ActionsGame(navController: NavController) {
         GameActionRow(
             icon = Icons.Default.Casino,
             text = "Roll Dice",
-            onClick = { navController.navigate("roll_dice") },
+            onClick = { navController.navigate("roll_dice/$gameId/$playerName") },
             modifier = Modifier.weight(1f)
         )
         GameActionRow(
