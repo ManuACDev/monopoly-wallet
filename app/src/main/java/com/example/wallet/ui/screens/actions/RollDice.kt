@@ -25,6 +25,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,16 +36,19 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.wallet.services.FirestoreService
 import com.example.wallet.ui.theme.Mirage
 import com.example.wallet.ui.theme.RoyalBlue
 import com.example.wallet.ui.theme.TwilightBlue
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
-fun RollDiceScreen(modifier: Modifier = Modifier) {
+fun RollDiceScreen(modifier: Modifier = Modifier, gameId: String, playerName: String, firestoreService: FirestoreService) {
     var diceValue by remember { mutableStateOf(1) }
     var previousDiceValue by remember { mutableStateOf(1) }
     var animationTrigger by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
 
     // Estado para la rotación final
     var rotationY by remember { mutableStateOf(0f) }
@@ -128,6 +132,17 @@ fun RollDiceScreen(modifier: Modifier = Modifier) {
                 animationTrigger = true
                 diceValue = (1..6).random()
                 rotationY = if (rotationY == 0f) 180f else 0f // Cambia la rotación para el siguiente lanzamiento
+
+                // Lanza la coroutine para enviar el mensaje al chat
+                coroutineScope.launch {
+                    val message = "$playerName ha lanzado los dados y ha sacado un $diceValue"
+                    firestoreService.sendChatMessage(
+                        gameId = gameId,
+                        playerName = playerName,
+                        message = message,
+                        type = "dice_roll"
+                    )
+                }
             },
             colors = ButtonDefaults.buttonColors(containerColor = RoyalBlue),
             modifier = Modifier
