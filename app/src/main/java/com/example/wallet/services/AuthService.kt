@@ -2,20 +2,32 @@ package com.example.wallet.services
 
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 
 class AuthService {
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
+    private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
 
     // Obtener usuario actual
     val currentUser: FirebaseUser?
         get() = auth.currentUser
 
     // Registrar usuario con email y contraseña
-    suspend fun register(email: String, password: String): Result<FirebaseUser> {
+    suspend fun register(name: String, email: String, password: String): Result<Unit> {
         return try {
             val authResult = auth.createUserWithEmailAndPassword(email, password).await()
-            Result.success(authResult.user!!)
+            val uid = authResult.user?.uid ?: throw Exception("UID not found")
+
+            // Agregar el usuario a la colección de Firestore
+            val userMap = mapOf(
+                "Name" to name,
+                "Email" to email,
+                "Uid" to uid
+            )
+
+            firestore.collection("Users").document(uid).set(userMap).await()
+            Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
         }

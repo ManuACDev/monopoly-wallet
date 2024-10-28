@@ -133,7 +133,7 @@ fun RegisterTab(onRegisterSuccess: () -> Unit, authService: AuthService) {
         Button(onClick = {
             // Intentar registrarse
             CoroutineScope(Dispatchers.IO).launch {
-                val result = authService.register(email, password)
+                val result = authService.register(name, email, password)
                 withContext(Dispatchers.Main) {
                     result.onSuccess {
                         onRegisterSuccess()
