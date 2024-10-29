@@ -5,6 +5,7 @@ import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.EnhancedEncryption
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Tab
@@ -17,9 +18,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.sp
 import com.example.wallet.services.AuthService
 import com.example.wallet.ui.theme.Nepal
 import com.example.wallet.ui.theme.PickledBluewood
+import com.example.wallet.ui.theme.RoyalBlue
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -129,20 +133,30 @@ fun LoginTab(onLoginSuccess: () -> Unit, authService: AuthService) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Button(onClick = {
-            // Intentar iniciar sesión
-            CoroutineScope(Dispatchers.IO).launch {
-                val result = authService.login(email, password)
-                withContext(Dispatchers.Main) {
-                    result.onSuccess {
-                        onLoginSuccess()
-                    }.onFailure {
-                        errorMessage = it.message
+        Button(
+            onClick = {
+                // Intentar iniciar sesión
+                CoroutineScope(Dispatchers.IO).launch {
+                    val result = authService.login(email, password)
+                    withContext(Dispatchers.Main) {
+                        result.onSuccess {
+                            onLoginSuccess()
+                        }.onFailure {
+                            errorMessage = it.message
+                        }
                     }
                 }
-            }
-        }) {
-            Text("Login")
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(45.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = RoyalBlue)
+        ) {
+            Text(
+                text = "Login",
+                textAlign = TextAlign.Center,
+                fontSize = 17.sp
+            )
         }
 
         errorMessage?.let { Text(it, color = Color.Red) }
