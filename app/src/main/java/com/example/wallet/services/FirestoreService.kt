@@ -119,7 +119,7 @@ class FirestoreService {
         firestore.collection("Games")
             .document(gameId)
             .collection("Chat")
-            .orderBy("timestamp", Query.Direction.ASCENDING) // Ordenar por timestamp
+            .orderBy("timestamp", Query.Direction.DESCENDING) // Ordenar por timestamp
             .addSnapshotListener { snapshots, error ->
                 if (error != null || snapshots == null) {
                     return@addSnapshotListener

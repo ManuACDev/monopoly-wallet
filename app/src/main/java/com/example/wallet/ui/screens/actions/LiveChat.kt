@@ -73,6 +73,7 @@ fun LiveChatScreen(modifier: Modifier = Modifier, gameId: String) {
         ) {
             // Lista de mensajes
             LazyColumn(
+                reverseLayout = true,
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(8.dp),
