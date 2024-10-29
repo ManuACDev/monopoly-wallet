@@ -135,7 +135,7 @@ fun RollDiceScreen(modifier: Modifier = Modifier, gameId: String, playerName: St
 
                 // Lanza la coroutine para enviar el mensaje al chat
                 coroutineScope.launch {
-                    val message = "$playerName ha lanzado los dados y ha sacado un $diceValue"
+                    val message = "ha lanzado los dados y ha sacado un $diceValue"
                     firestoreService.sendChatMessage(
                         gameId = gameId,
                         playerName = playerName,
