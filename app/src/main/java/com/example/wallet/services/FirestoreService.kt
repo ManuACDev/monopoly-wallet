@@ -1,7 +1,9 @@
 package com.example.wallet.services
 
 import com.example.wallet.models.GameConfig
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
 import kotlinx.coroutines.tasks.await
 
 
@@ -100,7 +102,7 @@ class FirestoreService {
                 "playerName" to playerName,
                 "message" to message,
                 "messageType" to type,
-                "timestamp" to System.currentTimeMillis()
+                "timestamp" to FieldValue.serverTimestamp()
             )
             firestore.collection("Games")
                 .document(gameId)
@@ -117,6 +119,7 @@ class FirestoreService {
         firestore.collection("Games")
             .document(gameId)
             .collection("Chat")
+            .orderBy("timestamp", Query.Direction.ASCENDING) // Ordenar por timestamp
             .addSnapshotListener { snapshots, error ->
                 if (error != null || snapshots == null) {
                     return@addSnapshotListener
