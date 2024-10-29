@@ -261,20 +261,30 @@ fun RegisterTab(onRegisterSuccess: () -> Unit, authService: AuthService) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Button(onClick = {
-            // Intentar registrarse
-            CoroutineScope(Dispatchers.IO).launch {
-                val result = authService.register(name, email, password)
-                withContext(Dispatchers.Main) {
-                    result.onSuccess {
-                        onRegisterSuccess()
-                    }.onFailure {
-                        errorMessage = it.message
+        Button(
+            onClick = {
+                // Intentar registrarse
+                CoroutineScope(Dispatchers.IO).launch {
+                    val result = authService.register(name, email, password)
+                    withContext(Dispatchers.Main) {
+                        result.onSuccess {
+                            onRegisterSuccess()
+                        }.onFailure {
+                            errorMessage = it.message
+                        }
                     }
                 }
-            }
-        }) {
-            Text("Register")
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(45.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = RoyalBlue)
+        ) {
+            Text(
+                text = "Register",
+                textAlign = TextAlign.Center,
+                fontSize = 17.sp
+            )
         }
 
         errorMessage?.let { Text(it, color = Color.Red) }
