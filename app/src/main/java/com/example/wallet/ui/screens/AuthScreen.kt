@@ -1,3 +1,4 @@
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -10,6 +11,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
+import androidx.compose.material3.TabRowDefaults.SecondaryIndicator
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.*
@@ -37,29 +40,50 @@ fun AuthScreen(modifier: Modifier = Modifier, onLoginSuccess: () -> Unit, authSe
         modifier = modifier
             .fillMaxSize()
             .padding(16.dp),
-        verticalArrangement = Arrangement.Center,
+        verticalArrangement = Arrangement.spacedBy(24.dp, alignment = Alignment.CenterVertically), // Espaciado automático entre elementos
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Tabs para Login y Register
-        TabRow(selectedTabIndex = selectedTab.ordinal) {
-            Tab(
-                text = { Text("Login") },
-                selected = selectedTab == AuthTab.Login,
-                onClick = { selectedTab = AuthTab.Login }
-            )
-            Tab(
-                text = { Text("Register") },
-                selected = selectedTab == AuthTab.Register,
-                onClick = { selectedTab = AuthTab.Register }
-            )
+        TabRow(
+            selectedTabIndex = selectedTab.ordinal,
+            modifier = Modifier.fillMaxWidth(),
+            containerColor = PickledBluewood, // Color de fondo de las pestañas
+            indicator = { tabPositions ->
+                SecondaryIndicator(
+                    Modifier.tabIndicatorOffset(tabPositions[selectedTab.ordinal]),
+                    color = Nepal // Color de la barra subrayada
+                )
+            },
+            divider = {
+                Box(
+                    Modifier
+                        .fillMaxWidth()
+                        .height(1.dp)
+                        .background(Color.Transparent) // Elimina la línea divisoria inferior
+                )
+            }
+        ) {
+            AuthTab.entries.forEach { tab ->
+                Tab(
+                    text = { Text(tab.name, color = if (selectedTab == tab) Nepal else Nepal) },
+                    selected = selectedTab == tab,
+                    onClick = { selectedTab = tab },
+                    selectedContentColor = Nepal, // Color del texto cuando está seleccionada
+                    unselectedContentColor = PickledBluewood // Color del texto cuando no está seleccionada
+                )
+            }
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
-
         // Mostrar la tab seleccionada
-        when (selectedTab) {
-            AuthTab.Login -> LoginTab(onLoginSuccess = onLoginSuccess, authService = authService)
-            AuthTab.Register -> RegisterTab(onRegisterSuccess = onLoginSuccess, authService = authService)
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = 400.dp)
+        ) {
+            when (selectedTab) {
+                AuthTab.Login -> LoginTab(onLoginSuccess = onLoginSuccess, authService = authService)
+                AuthTab.Register -> RegisterTab(onRegisterSuccess = onLoginSuccess, authService = authService)
+            }
         }
     }
 }
@@ -72,8 +96,10 @@ fun LoginTab(onLoginSuccess: () -> Unit, authService: AuthService) {
 
     Column(
         modifier = Modifier
+            .fillMaxWidth()
+            .wrapContentHeight()
             .padding(8.dp),
-        verticalArrangement = Arrangement.Center,
+        verticalArrangement = Arrangement.spacedBy(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         OutlinedTextField(
@@ -102,7 +128,7 @@ fun LoginTab(onLoginSuccess: () -> Unit, authService: AuthService) {
             )
         )
 
-        Spacer(modifier = Modifier.height(14.dp))
+        Spacer(modifier = Modifier.height(10.dp))
 
         OutlinedTextField(
             value = password,
@@ -131,7 +157,7 @@ fun LoginTab(onLoginSuccess: () -> Unit, authService: AuthService) {
             visualTransformation = PasswordVisualTransformation()
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(14.dp))
 
         Button(
             onClick = {
@@ -172,8 +198,10 @@ fun RegisterTab(onRegisterSuccess: () -> Unit, authService: AuthService) {
 
     Column(
         modifier = Modifier
+            .fillMaxWidth()
+            .wrapContentHeight()
             .padding(8.dp),
-        verticalArrangement = Arrangement.Center,
+        verticalArrangement = Arrangement.spacedBy(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         OutlinedTextField(
@@ -202,7 +230,7 @@ fun RegisterTab(onRegisterSuccess: () -> Unit, authService: AuthService) {
             )
         )
 
-        Spacer(modifier = Modifier.height(14.dp))
+        Spacer(modifier = Modifier.height(10.dp))
 
         OutlinedTextField(
             value = email,
@@ -230,7 +258,7 @@ fun RegisterTab(onRegisterSuccess: () -> Unit, authService: AuthService) {
             )
         )
 
-        Spacer(modifier = Modifier.height(14.dp))
+        Spacer(modifier = Modifier.height(10.dp))
 
         OutlinedTextField(
             value = password,
@@ -259,7 +287,7 @@ fun RegisterTab(onRegisterSuccess: () -> Unit, authService: AuthService) {
             visualTransformation = PasswordVisualTransformation()
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(14.dp))
 
         Button(
             onClick = {
