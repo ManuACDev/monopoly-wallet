@@ -28,6 +28,7 @@ import com.example.wallet.ui.screens.GameScreen
 import com.example.wallet.ui.screens.HomeScreen
 import com.example.wallet.ui.screens.actions.LiveChatScreen
 import com.example.wallet.ui.screens.actions.RollDiceScreen
+import com.example.wallet.ui.screens.actions.SendMoneyScreen
 import com.example.wallet.ui.theme.MonopolyWalletTheme
 import com.example.wallet.ui.theme.Vulcan
 
@@ -168,6 +169,21 @@ fun MyApp(authService: AuthService, firestoreService: FirestoreService) {
                         val gameId = backStackEntry.arguments?.getString("gameId")
                         if (gameId != null) {
                             LiveChatScreen(
+                                modifier = Modifier
+                                    .padding(innerPadding)
+                                    .fillMaxSize(),
+                                gameId = gameId
+                            )
+                        }
+                    }
+
+                    composable(
+                        "send_money/{gameId}",
+                        arguments = listOf(navArgument("gameId") { type = NavType.StringType })
+                    ) {backStackEntry ->
+                        val gameId = backStackEntry.arguments?.getString("gameId")
+                        if (gameId != null) {
+                            SendMoneyScreen(
                                 modifier = Modifier
                                     .padding(innerPadding)
                                     .fillMaxSize(),

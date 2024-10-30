@@ -202,7 +202,7 @@ fun ActionsGame(navController: NavController, gameId: String, playerName: String
         GameActionRow(
             icon = Icons.AutoMirrored.Filled.Send,
             text = "Send Money",
-            onClick = { /* Navegar a Send Money Screen */ },
+            onClick = { navController.navigate("send_money/$gameId") },
             modifier = Modifier.weight(1f)
         )
         GameActionRow(
