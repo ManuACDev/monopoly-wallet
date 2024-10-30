@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
@@ -42,6 +43,7 @@ import com.example.wallet.ui.theme.PickledBluewood
 @Composable
 fun LiveChatScreen(modifier: Modifier = Modifier, gameId: String) {
     val messages = remember { mutableStateListOf<ChatMessage>() }
+    val listState = rememberLazyListState()
 
     // Observa los mensajes en tiempo real
     LaunchedEffect(gameId) {
@@ -51,9 +53,14 @@ fun LiveChatScreen(modifier: Modifier = Modifier, gameId: String) {
             val sender = data["playerName"] as? String ?: "Desconocido"
             val content = data["message"] as? String ?: ""
             val type = data["messageType"] as? String ?: "send"
-            if (content.isNotEmpty()) {
-                messages.add(ChatMessage(sender, content, type)) // Añade el mensaje a la lista
-            }
+            messages.add(ChatMessage(sender, content, type)) // Añade el mensaje a la lista
+        }
+    }
+
+    // Desplaza al último mensaje cuando la lista de mensajes cambia
+    LaunchedEffect(messages.size) {
+        if (messages.isNotEmpty()) {
+            listState.animateScrollToItem(messages.size - 1)
         }
     }
 
@@ -73,7 +80,7 @@ fun LiveChatScreen(modifier: Modifier = Modifier, gameId: String) {
         ) {
             // Lista de mensajes
             LazyColumn(
-                reverseLayout = true,
+                state = listState, // Usar el estado de la lista para controlar el scroll
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(8.dp),
