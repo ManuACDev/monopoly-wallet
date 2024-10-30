@@ -163,4 +163,19 @@ class FirestoreService {
             "Invitado"
         }
     }
+
+    // Recuperar los jugadores
+    fun getGamePlayers(gameId: String, onPlayersUpdated: (List<Map<String, Any>>) -> Unit) {
+        firestore.collection("Games")
+            .document(gameId)
+            .collection("Players")
+            .addSnapshotListener { snapshots, error ->
+                if (error != null || snapshots == null) {
+                    return@addSnapshotListener
+                }
+                // Mapea los documentos de los jugadores a una lista de datos
+                val playersList = snapshots.documents.mapNotNull { it.data }
+                onPlayersUpdated(playersList)
+            }
+    }
 }
