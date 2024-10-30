@@ -69,13 +69,15 @@ fun MyApp(authService: AuthService, firestoreService: FirestoreService) {
             topBar = {
                 val currentBackStackEntry = navController.currentBackStackEntryAsState().value
                 val route = currentBackStackEntry?.destination?.route
-                val showBackButton = route == "game_options" || route == "roll_dice"
+                val showBackButton = route == "game_options" || route == "roll_dice/{gameId}/{playerName}"
+                        || route == "live_chat/{gameId}"
                 val showLogoutButton = route == "home"
 
                 CenterAlignedAppBar(
                     title = when (route) {
                         "game_options" -> "Game Options"
-                        "roll_dice" -> "Roll Dice"
+                        "roll_dice/{gameId}/{playerName}" -> "Roll Dice"
+                        "live_chat/{gameId}" -> "Live Chat"
                         else -> "Monopoly"
                     },
                     showBackButton = showBackButton,
