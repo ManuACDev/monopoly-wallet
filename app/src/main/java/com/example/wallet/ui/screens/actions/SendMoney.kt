@@ -1,6 +1,7 @@
 package com.example.wallet.ui.screens.actions
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -28,9 +30,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.wallet.models.Player
 import com.example.wallet.services.AuthService
 import com.example.wallet.services.FirestoreService
+import com.example.wallet.ui.theme.Mirage
+import com.example.wallet.ui.theme.Nepal
+import com.example.wallet.ui.theme.TwilightBlue
 
 @Composable
 fun SendMoneyScreen(modifier: Modifier = Modifier, gameId: String) {
@@ -84,19 +90,44 @@ fun SendDetails(gameId: String, uid: String) {
         }
     }
 
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(4.dp)
+    Column(
+        modifier = Modifier
+            .padding(8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(125.dp)
+                .border(1.dp, color = Nepal, shape = RoundedCornerShape(16.dp)),
+            colors = CardDefaults.cardColors(containerColor = Mirage),
+            elevation = CardDefaults.cardElevation(4.dp),
+            shape = RoundedCornerShape(16.dp)
         ) {
-            Text(text = "Current Balance", style = MaterialTheme.typography.titleMedium)
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(text = "${player?.money}")
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.SpaceBetween,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "Current Balance",
+                    fontSize = 26.sp,
+                    color = TwilightBlue,
+                    style = MaterialTheme.typography.titleMedium
+                )
+
+                Text(
+                    text = "${player?.money} $",
+                    fontSize = 23.sp,
+                    color = Nepal
+                )
+            }
         }
-    }
+
+
+    } // Cierra Column
 
     Spacer(modifier = Modifier.height(16.dp))
 
