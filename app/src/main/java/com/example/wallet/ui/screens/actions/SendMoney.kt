@@ -54,6 +54,7 @@ fun SendMoneyScreen(modifier: Modifier = Modifier, gameId: String) {
 @Composable
 fun SendDetails(gameId: String, uid: String) {
     // Estado de los jugadores, destinatario y cantidad
+    var player by remember { mutableStateOf<Player?>(null) }
     val players = remember { mutableStateListOf<Player>() }
     var amount by remember { mutableStateOf("") }
     var selectedRecipient by remember { mutableStateOf<Player?>(null) }
@@ -63,6 +64,7 @@ fun SendDetails(gameId: String, uid: String) {
     // Recupera jugadores de la partida y excluye al usuario actual
     LaunchedEffect(gameId) {
         val firestoreService = FirestoreService()
+        player = firestoreService.getPlayer(gameId, uid)
         firestoreService.getGamePlayers(gameId) { playerList ->
             players.clear()
             players.addAll(
@@ -92,7 +94,7 @@ fun SendDetails(gameId: String, uid: String) {
         ) {
             Text(text = "Current Balance", style = MaterialTheme.typography.titleMedium)
             Spacer(modifier = Modifier.height(8.dp))
-            Text(text = "${players.firstOrNull { it.uid == uid }?.money ?: 0}")
+            Text(text = "${player?.money}")
         }
     }
 
