@@ -1,6 +1,7 @@
 package com.example.wallet.services
 
 import com.example.wallet.models.GameConfig
+import com.example.wallet.models.Player
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
@@ -142,7 +143,7 @@ class FirestoreService {
         }
     }
 
-    suspend fun getPlayerName(gameId: String, uid: String): String? {
+    suspend fun getPlayer(gameId: String, uid: String): Player? {
         return try {
             val playersSnapshot  = firestore.collection("Games")
                 .document(gameId)
@@ -151,16 +152,19 @@ class FirestoreService {
                 .await()
 
             // Buscar el documento que tenga el uid como clave
-            for (document in playersSnapshot.documents) {
-                val playerUid = document.getString("Uid") // Recuperar el campo uid del documento
-                if (playerUid == uid) { // Comparar el campo uid con el uid proporcionado
-                    return document.getString("Name") // Retornar el nombre del jugador
+            playersSnapshot.documents
+                .firstOrNull { it.getString("Uid") == uid }
+                ?.let { document ->
+                    // Crear el objeto Player con los datos del documento
+                    Player(
+                        name = document.getString("Name") ?: "Invitado",
+                        money = document.getLong("Money") ?: 0,
+                        uid = document.getString("Uid") ?: uid
+                    )
                 }
-            }
-            "Invitado"
         } catch (e: Exception) {
             println("Error al recuperar el nombre del jugador: ${e.message}")
-            "Invitado"
+            null
         }
     }
 

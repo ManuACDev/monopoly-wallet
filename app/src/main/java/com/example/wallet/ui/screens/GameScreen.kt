@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.wallet.models.GameConfig
+import com.example.wallet.models.Player
 import com.example.wallet.services.AuthService
 import com.example.wallet.services.FirestoreService
 import com.example.wallet.ui.theme.Mirage
@@ -53,6 +54,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun GameScreen(modifier: Modifier = Modifier, gameId: String, navController: NavController) {
+    var player by remember { mutableStateOf<Player?>(null) }
     var playerName by remember { mutableStateOf<String?>(null) }
     val authService = AuthService()
     val uid = authService.currentUser?.uid
@@ -60,7 +62,8 @@ fun GameScreen(modifier: Modifier = Modifier, gameId: String, navController: Nav
     LaunchedEffect(gameId, uid) {
         uid?.let {
             val firestoreService = FirestoreService()
-            playerName = firestoreService.getPlayerName(gameId, it)
+            player = firestoreService.getPlayer(gameId, it)
+            playerName = player?.name
         }
     }
 
