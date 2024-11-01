@@ -200,7 +200,6 @@ class FirestoreService {
 
     // Enviar dinero
     suspend fun transferMoney(amount: Int, sender: Player, gameId: String, transferTo: String, recipientPlayer: Player? = null) {
-        val firestoreService = FirestoreService()
         val gameRef = firestore.collection("Games").document(gameId)
 
         when (transferTo) {
@@ -276,37 +275,35 @@ class FirestoreService {
             }
 
             "Parking" -> {
-                // Actualizar el saldo del remitente
-                val updatedSender = sender.copy(money = sender.money - amount)
-                firestoreService.updatePlayerBalance(gameId, updatedSender)
+                // Obtener documentos de sender y parking fuera de la transacción
+                val senderSnapshot = gameRef.collection("Players")
+                    .whereEqualTo("Uid", sender.uid)
+                    .get()
+                    .await()
+                    .documents
+                    .firstOrNull()
+                    ?: throw Exception("Error: No se encontró el jugador remitente con UID: ${sender.uid}")
 
-                // Actualizar el saldo del parking
                 val parkingRef = gameRef.collection("Bank").document("Parking")
-                val parkingSnapshot = parkingRef.get().await()
-                val currentParkingMoney = parkingSnapshot.getLong("Money") ?: 0
-                parkingRef.update("Money", currentParkingMoney + amount).await()
+
+                val senderRef = senderSnapshot.reference
+
+                firestore.runTransaction { transaction ->
+                    // Leer el saldo del remitente y del estacionamiento al inicio
+                    val senderMoney = transaction.get(senderRef).getLong("Money") ?: 0
+                    val parkingMoney = transaction.get(parkingRef).getLong("Money") ?: 0
+
+                    // Actualizar el saldo del remitente
+                    transaction.update(senderRef, "Money", senderMoney - amount)
+
+                    // Actualizar el saldo del parking
+                    transaction.update(parkingRef, "Money", parkingMoney + amount)
+                }.addOnSuccessListener {
+                    println("Transferencia a parking completada con éxito.")
+                }.addOnFailureListener { e ->
+                    println("Error en la transferencia: ${e.message}")
+                }
             }
-        }
-    }
-
-    suspend fun updatePlayerBalance(gameId: String, player: Player) {
-        try {
-            val gameRef = firestore.collection("Games").document(gameId)
-            val playersRef = gameRef.collection("Players")
-
-            // Encuentra el documento del jugador utilizando el UID
-            val playerSnapshot = playersRef.whereEqualTo("Uid", player.uid).get().await()
-            val playerDoc = playerSnapshot.documents.firstOrNull()
-
-            if (playerDoc != null) {
-                // Actualiza el campo "Money" con el nuevo saldo del jugador
-                playersRef.document(playerDoc.id).update("Money", player.money).await()
-                println("Saldo actualizado correctamente para ${player.name}")
-            } else {
-                println("No se encontró el jugador con UID: ${player.uid}")
-            }
-        } catch (e: Exception) {
-            println("Error al actualizar el saldo del jugador: ${e.message}")
         }
     }
 }
