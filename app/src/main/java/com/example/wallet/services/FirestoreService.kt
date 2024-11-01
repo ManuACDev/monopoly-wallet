@@ -15,10 +15,26 @@ class FirestoreService {
     // Crear una nueva partida
     suspend fun createGame(gameId: String, data: Map<String, Any>) {
         try {
-            firestore.collection("Games")
-                .document(gameId)
-                .set(data)
-                .await()
+            val gameRef = firestore.collection("Games").document(gameId)
+
+            // Crear el documento de la partida
+            gameRef.set(data).await()
+
+            // Crear subdocumento "Banca" con dinero infinito
+            val bankData = mapOf(
+                "Name" to "Banca",
+                "Money" to 100000000 // Representa dinero infinito, o usa un valor muy alto si prefieres
+            )
+            gameRef.collection("Bank").document("Banca").set(bankData).await()
+
+            // Crear subdocumento "Parking" con dinero inicial de 0
+            val parkingData = mapOf(
+                "Name" to "Parking",
+                "Money" to 0
+            )
+            gameRef.collection("Bank").document("Parking").set(parkingData).await()
+
+            println("Partida $gameId creada exitosamente con subdocumentos Banca y Parking.")
         } catch (e: Exception) {
             // Manejar errores
             println("Error al crear la partida")
@@ -143,29 +159,28 @@ class FirestoreService {
         }
     }
 
-    suspend fun getPlayer(gameId: String, uid: String): Player? {
-        return try {
-            val playersSnapshot  = firestore.collection("Games")
-                .document(gameId)
-                .collection("Players")
-                .get()
-                .await()
+    fun getPlayer(gameId: String, uid: String, onPlayerUpdated: (Player?) -> Unit) {
+        firestore.collection("Games")
+            .document(gameId)
+            .collection("Players")
+            .whereEqualTo("Uid", uid)
+            .addSnapshotListener { snapshots, error ->
+                if (error != null) {
+                    println("Error al escuchar cambios en el jugador: ${error.message}")
+                    onPlayerUpdated(null)
+                    return@addSnapshotListener
+                }
 
-            // Buscar el documento que tenga el uid como clave
-            playersSnapshot.documents
-                .firstOrNull { it.getString("Uid") == uid }
-                ?.let { document ->
-                    // Crear el objeto Player con los datos del documento
+                val playerDocument = snapshots?.documents?.firstOrNull()
+                val player = playerDocument?.let { document ->
                     Player(
                         name = document.getString("Name") ?: "Invitado",
                         money = document.getLong("Money") ?: 0L,
                         uid = document.getString("Uid") ?: uid
                     )
                 }
-        } catch (e: Exception) {
-            println("Error al recuperar el nombre del jugador: ${e.message}")
-            null
-        }
+                onPlayerUpdated(player)
+            }
     }
 
     // Recuperar los jugadores
@@ -181,5 +196,70 @@ class FirestoreService {
                 val playersList = snapshots.documents.mapNotNull { it.data }
                 onPlayersUpdated(playersList)
             }
+    }
+
+    // Enviar dinero
+    suspend fun transferMoney(amount: Int, sender: Player, gameId: String, transferTo: String, recipientPlayer: Player? = null) {
+        val firestoreService = FirestoreService()
+        val gameRef = firestore.collection("Games").document(gameId)
+
+        when (transferTo) {
+            "Player" -> {
+                recipientPlayer?.let {
+                    // Actualizar el saldo del remitente
+                    val updatedSender = sender.copy(money = sender.money - amount)
+                    firestoreService.updatePlayerBalance(gameId, updatedSender)
+
+                    // Actualizar el saldo del destinatario
+                    val updatedRecipient = it.copy(money = it.money + amount)
+                    firestoreService.updatePlayerBalance(gameId, updatedRecipient)
+                }
+            }
+
+            "Bank" -> {
+                // Actualizar solo el saldo del remitente (el banco tiene dinero infinito y no necesita actualización)
+                val updatedSender = sender.copy(money = sender.money - amount)
+                firestoreService.updatePlayerBalance(gameId, updatedSender)
+
+                // Actualizar el saldo de la banca
+                val bankRef = gameRef.collection("Bank").document("Banca")
+                val bankSnapshot = bankRef.get().await()
+                val currentBankMoney = bankSnapshot.getLong("Money") ?: 0
+                bankRef.update("Money", currentBankMoney + amount).await()
+            }
+
+            "Parking" -> {
+                // Actualizar el saldo del remitente
+                val updatedSender = sender.copy(money = sender.money - amount)
+                firestoreService.updatePlayerBalance(gameId, updatedSender)
+
+                // Actualizar el saldo del parking
+                val parkingRef = gameRef.collection("Bank").document("Parking")
+                val parkingSnapshot = parkingRef.get().await()
+                val currentParkingMoney = parkingSnapshot.getLong("Money") ?: 0
+                parkingRef.update("Money", currentParkingMoney + amount).await()
+            }
+        }
+    }
+
+    suspend fun updatePlayerBalance(gameId: String, player: Player) {
+        try {
+            val gameRef = firestore.collection("Games").document(gameId)
+            val playersRef = gameRef.collection("Players")
+
+            // Encuentra el documento del jugador utilizando el UID
+            val playerSnapshot = playersRef.whereEqualTo("Uid", player.uid).get().await()
+            val playerDoc = playerSnapshot.documents.firstOrNull()
+
+            if (playerDoc != null) {
+                // Actualiza el campo "Money" con el nuevo saldo del jugador
+                playersRef.document(playerDoc.id).update("Money", player.money).await()
+                println("Saldo actualizado correctamente para ${player.name}")
+            } else {
+                println("No se encontró el jugador con UID: ${player.uid}")
+            }
+        } catch (e: Exception) {
+            println("Error al actualizar el saldo del jugador: ${e.message}")
+        }
     }
 }

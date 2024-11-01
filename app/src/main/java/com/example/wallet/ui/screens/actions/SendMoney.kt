@@ -37,6 +37,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -52,6 +53,7 @@ import com.example.wallet.ui.theme.Nepal
 import com.example.wallet.ui.theme.PickledBluewood
 import com.example.wallet.ui.theme.RoyalBlue
 import com.example.wallet.ui.theme.TwilightBlue
+import kotlinx.coroutines.launch
 
 @Composable
 fun SendMoneyScreen(modifier: Modifier = Modifier, gameId: String) {
@@ -83,10 +85,15 @@ fun SendDetails(gameId: String, uid: String) {
     var expanded by remember { mutableStateOf(false) }
     var transferTo by remember { mutableStateOf("Player") }
 
-    // Recupera jugadores de la partida y excluye al usuario actual
+    val firestoreService = FirestoreService()
+    val coroutineScope = rememberCoroutineScope()
+
+    // Recupera jugadores de la partida y al usuario actual
     LaunchedEffect(gameId) {
-        val firestoreService = FirestoreService()
-        player = firestoreService.getPlayer(gameId, uid)
+        firestoreService.getPlayer(gameId, uid) { updatedPlayer ->
+            updatedPlayer?.let { player = it }
+        }
+
         firestoreService.getGamePlayers(gameId) { playerList ->
             players.clear()
             players.addAll(
@@ -298,9 +305,20 @@ fun SendDetails(gameId: String, uid: String) {
 
                 Button(
                     onClick = {
-                        selectedPlayer?.let {
-                            //val recipientUid = it.uid
-                            // Lógica para transferir el dinero
+                        val amountToTransfer = amount.toIntOrNull()
+                        if (player != null && amountToTransfer != null && amountToTransfer > 0) {
+                            coroutineScope.launch {
+                                firestoreService.transferMoney(
+                                    amount = amountToTransfer,
+                                    sender = player!!,
+                                    gameId = gameId,
+                                    transferTo = transferTo,
+                                    recipientPlayer = if (transferTo == "Player") selectedPlayer else null
+                                )
+                            }
+                        } else {
+                            // Manejar casos de error, como cuando amountToTransfer es nulo o menor o igual a cero
+                            println("Error: Ingrese un monto válido para transferir.")
                         }
                     },
                     modifier = Modifier
