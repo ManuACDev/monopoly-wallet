@@ -62,8 +62,10 @@ fun GameScreen(modifier: Modifier = Modifier, gameId: String, navController: Nav
     LaunchedEffect(gameId, uid) {
         uid?.let {
             val firestoreService = FirestoreService()
-            player = firestoreService.getPlayer(gameId, it)
-            playerName = player?.name
+            firestoreService.getPlayer(gameId, it) { updatedPlayer ->
+                player = updatedPlayer
+                playerName = updatedPlayer?.name
+            }
         }
     }
 
