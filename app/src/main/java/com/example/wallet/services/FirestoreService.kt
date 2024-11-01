@@ -158,7 +158,7 @@ class FirestoreService {
                     // Crear el objeto Player con los datos del documento
                     Player(
                         name = document.getString("Name") ?: "Invitado",
-                        money = document.getLong("Money") ?: 0,
+                        money = (document.getLong("Money") ?: 0L).toInt(),
                         uid = document.getString("Uid") ?: uid
                     )
                 }
