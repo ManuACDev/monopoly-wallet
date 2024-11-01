@@ -92,7 +92,7 @@ fun SendDetails(gameId: String, uid: String) {
             players.addAll(
                 playerList.mapNotNull { playerData ->
                     val name = playerData["Name"] as? String
-                    val money = playerData["Money"] as? Int
+                    val money = playerData["Money"] as? Long
                     val playerUid = playerData["Uid"] as? String
 
                     // Excluye al usuario actual y asegura que todos los campos no sean nulos
