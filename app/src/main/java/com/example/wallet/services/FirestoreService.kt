@@ -205,14 +205,42 @@ class FirestoreService {
 
         when (transferTo) {
             "Player" -> {
-                recipientPlayer?.let {
-                    // Actualizar el saldo del remitente
-                    val updatedSender = sender.copy(money = sender.money - amount)
-                    firestoreService.updatePlayerBalance(gameId, updatedSender)
+                if (recipientPlayer != null) {
+                    // Obtener documentos de sender y recipient fuera de la transacción
+                    val senderSnapshot = gameRef.collection("Players")
+                        .whereEqualTo("Uid", sender.uid)
+                        .get()
+                        .await()
+                        .documents
+                        .firstOrNull()
+                        ?: throw Exception("Error: No se encontró el jugador remitente con UID: ${sender.uid}")
 
-                    // Actualizar el saldo del destinatario
-                    val updatedRecipient = it.copy(money = it.money + amount)
-                    firestoreService.updatePlayerBalance(gameId, updatedRecipient)
+                    val recipientSnapshot = gameRef.collection("Players")
+                        .whereEqualTo("Uid", recipientPlayer.uid)
+                        .get()
+                        .await()
+                        .documents
+                        .firstOrNull()
+                        ?: throw Exception("Error: No se encontró el jugador destinatario con UID: ${recipientPlayer.uid}")
+
+                    val senderRef = senderSnapshot.reference
+                    val recipientRef = recipientSnapshot.reference
+
+                    firestore.runTransaction { transaction ->
+                        // Leer el saldo del remitente y del destinatario al inicio
+                        val senderMoney = transaction.get(senderRef).getLong("Money") ?: 0
+                        val recipientMoney = transaction.get(recipientRef).getLong("Money") ?: 0
+
+                        // Actualizar el saldo del remitente
+                        transaction.update(senderRef, "Money", senderMoney - amount)
+
+                        // Actualizar el saldo del destinatario
+                        transaction.update(recipientRef, "Money", recipientMoney + amount)
+                    }.addOnSuccessListener {
+                        println("Transferencia a jugador completada con éxito.")
+                    }.addOnFailureListener { e ->
+                        println("Error en la transferencia: ${e.message}")
+                    }
                 }
             }
 
