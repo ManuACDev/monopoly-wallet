@@ -245,15 +245,34 @@ class FirestoreService {
             }
 
             "Bank" -> {
-                // Actualizar solo el saldo del remitente (el banco tiene dinero infinito y no necesita actualización)
-                val updatedSender = sender.copy(money = sender.money - amount)
-                firestoreService.updatePlayerBalance(gameId, updatedSender)
+                // Obtener documentos de sender y bank fuera de la transacción
+                val senderSnapshot = gameRef.collection("Players")
+                    .whereEqualTo("Uid", sender.uid)
+                    .get()
+                    .await()
+                    .documents
+                    .firstOrNull()
+                    ?: throw Exception("Error: No se encontró el jugador remitente con UID: ${sender.uid}")
 
-                // Actualizar el saldo de la banca
                 val bankRef = gameRef.collection("Bank").document("Banca")
-                val bankSnapshot = bankRef.get().await()
-                val currentBankMoney = bankSnapshot.getLong("Money") ?: 0
-                bankRef.update("Money", currentBankMoney + amount).await()
+
+                val senderRef = senderSnapshot.reference
+
+                firestore.runTransaction { transaction ->
+                    // Leer el saldo del remitente y del banco al inicio
+                    val senderMoney = transaction.get(senderRef).getLong("Money") ?: 0
+                    val bankMoney = transaction.get(bankRef).getLong("Money") ?: 0
+
+                    // Actualizar el saldo del remitente
+                    transaction.update(senderRef, "Money", senderMoney - amount)
+
+                    // Actualizar el saldo de la banca
+                    transaction.update(bankRef, "Money", bankMoney + amount)
+                }.addOnSuccessListener {
+                    println("Transferencia a banca completada con éxito.")
+                }.addOnFailureListener { e ->
+                    println("Error en la transferencia: ${e.message}")
+                }
             }
 
             "Parking" -> {
