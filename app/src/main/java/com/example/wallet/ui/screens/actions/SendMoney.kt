@@ -308,13 +308,31 @@ fun SendDetails(gameId: String, uid: String) {
                         val amountToTransfer = amount.toIntOrNull()
                         if (player != null && amountToTransfer != null && amountToTransfer > 0) {
                             coroutineScope.launch {
-                                firestoreService.transferMoney(
-                                    amount = amountToTransfer,
-                                    sender = player!!,
-                                    gameId = gameId,
-                                    transferTo = transferTo,
-                                    recipientPlayer = if (transferTo == "Player") selectedPlayer else null
-                                )
+                                try {
+                                    firestoreService.transferMoney(
+                                        amount = amountToTransfer,
+                                        sender = player!!,
+                                        gameId = gameId,
+                                        transferTo = transferTo,
+                                        recipientPlayer = if (transferTo == "Player") selectedPlayer else null
+                                    )
+                                    var message = ""
+                                    if (transferTo == "Player") {
+                                         message = "ha enviado $amount$ al jugador ${selectedPlayer?.name}"
+                                    } else if (transferTo == "Bank") {
+                                        message = "ha enviado $amount$ a la Banca"
+                                    } else {
+                                        message = "ha enviado $amount$ al Parking"
+                                    }
+                                    firestoreService.sendChatMessage(
+                                        gameId = gameId,
+                                        playerName = player!!.name,
+                                        message = message,
+                                        type = "send_money"
+                                    )
+                                } catch (e: Exception) {
+                                    println("Error: ${e.message}")
+                                }
                             }
                         } else {
                             // Manejar casos de error, como cuando amountToTransfer es nulo o menor o igual a cero

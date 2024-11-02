@@ -18,6 +18,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.Casino
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -143,6 +144,7 @@ fun ChatMessageItem(message: ChatMessage) {
 fun getMessageIcon(type: String): ImageVector {
     return when (type) {
         "dice_roll" -> Icons.Default.Casino
+        "send_money" -> Icons.Default.AttachMoney
         else -> Icons.AutoMirrored.Filled.Send
     }
 }
