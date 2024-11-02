@@ -194,7 +194,7 @@ fun JoinScreen(navController: NavController) {
                                 try {
                                     val userId = authService.currentUser?.uid
                                     if (userId != null) {
-                                        firestoreService.joinGame(gameId, playerName, userId) // Usar playerName
+                                        firestoreService.joinGame(gameId, playerName, userId, false) // Usar playerName
                                         withContext(Dispatchers.Main) {
                                             navController.navigate("gameScreen/$gameId") // Navegar si es exitoso
                                         }

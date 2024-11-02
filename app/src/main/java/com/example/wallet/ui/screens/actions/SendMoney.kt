@@ -101,10 +101,11 @@ fun SendDetails(gameId: String, uid: String) {
                     val name = playerData["Name"] as? String
                     val money = playerData["Money"] as? Long
                     val playerUid = playerData["Uid"] as? String
+                    val admin = playerData["Admin"] as? Boolean
 
                     // Excluye al usuario actual y asegura que todos los campos no sean nulos
-                    if (name != null && money != null && playerUid != null && playerUid != uid) {
-                        Player(name, money, playerUid)
+                    if (name != null && money != null && playerUid != null && playerUid != uid && admin != null) {
+                        Player(name, money, playerUid, admin)
                     } else {
                         null
                     }
@@ -316,7 +317,7 @@ fun SendDetails(gameId: String, uid: String) {
                                         transferTo = transferTo,
                                         recipientPlayer = if (transferTo == "Player") selectedPlayer else null
                                     )
-                                    var message = ""
+                                    val message: String
                                     if (transferTo == "Player") {
                                          message = "ha enviado $amount$ al jugador ${selectedPlayer?.name}"
                                     } else if (transferTo == "Bank") {

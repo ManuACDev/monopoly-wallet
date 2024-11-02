@@ -393,7 +393,7 @@ suspend fun createGameInFirestore(config: GameConfig, creatorName: String): Stri
         // Añadir al creador como primer jugador
         val userId = authService.currentUser?.uid
         if (userId != null) {
-            firestoreService.joinGame(gameId, creatorName, userId)
+            firestoreService.joinGame(gameId, creatorName, userId, true)
             println("Partida guardada exitosamente en Firestore")
             return gameId
         } else {
