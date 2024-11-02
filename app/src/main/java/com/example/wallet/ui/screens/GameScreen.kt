@@ -134,7 +134,7 @@ fun GameDetails(gameId: String) {
     ) {
         // Sección Game Options
         Text(
-            text = "Game Details",
+            text = "Game Details -> $gameId",
             fontSize = 20.sp,
             textAlign = TextAlign.Left,
             fontWeight = FontWeight.Bold,
