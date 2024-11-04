@@ -3,6 +3,7 @@
 package com.example.wallet.ui.screens.actions
 
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -42,6 +44,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -288,16 +291,18 @@ fun BankActions(gameId: String, uid: String) {
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceAround
                 ) {
-                    TransferOptionCard(
+                    FromOptionCard(
                         icon = Icons.Default.AccountBalance,
                         text = "Bank",
+                        amount = 100000000 ,
                         isSelected = transferFrom == "Bank",
                         onClick = { transferFrom = "Bank" }
                     )
 
-                    TransferOptionCard(
+                    FromOptionCard(
                         icon = Icons.Default.LocalParking,
                         text = "Parking",
+                        amount = 2500,
                         isSelected = transferFrom == "Parking",
                         onClick = { transferFrom = "Parking" }
                     )
@@ -458,6 +463,52 @@ fun BankActions(gameId: String, uid: String) {
                 }
             }
         } // Cierra Card Transfer
+    }
+}
+
+@Composable
+fun FromOptionCard(icon: ImageVector, text: String, amount: Int, isSelected: Boolean, onClick: () -> Unit) {
+    Card(
+        modifier = Modifier
+            .size(125.dp)
+            .border(
+                width = if (isSelected) 2.dp else 1.dp,
+                color = if (isSelected) RoyalBlue else Nepal,
+                shape = RoundedCornerShape(8.dp)
+            )
+            .clickable { onClick() },
+        colors = CardDefaults.cardColors(containerColor = Mirage),
+        shape = RoundedCornerShape(8.dp),
+        elevation = CardDefaults.cardElevation(4.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceEvenly
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = text,
+                tint = if (isSelected) RoyalBlue else Nepal,
+                modifier = Modifier.size(35.dp)
+            )
+
+            Text(
+                text = text,
+                color = if (isSelected) RoyalBlue else Nepal,
+                fontSize = 17.sp,
+                textAlign = TextAlign.Center
+            )
+
+            Text(
+                text = "$amount $", // Muestra el monto de la banca o parking
+                color = if (isSelected) RoyalBlue else Nepal,
+                fontSize = 17.sp,
+                textAlign = TextAlign.Center
+            )
+        }
     }
 }
 
