@@ -41,6 +41,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -83,7 +84,7 @@ fun BankActions(gameId: String, uid: String) {
     // Propiedades jugador
     var admin by remember { mutableStateOf(false) }
     var auto by remember { mutableStateOf(false) }
-    val banker by remember { mutableStateOf(false) }
+    var banker by remember { mutableStateOf(false) }
 
     val players = remember { mutableStateListOf<Player>() }
 
@@ -110,6 +111,7 @@ fun BankActions(gameId: String, uid: String) {
         firestoreService.getPlayer(gameId, uid) { updatedPlayer ->
             updatedPlayer?.let { player = it }
             admin = player?.admin == true
+            banker = player?.banker == true
         }
 
         firestoreService.getGamePlayers(gameId) { playerList ->
@@ -240,6 +242,33 @@ fun BankActions(gameId: String, uid: String) {
                             }
                         } // Cierra ExposedDropdownMenu
                     } // Cierra ExposedDropdownMenuBox
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Button(
+                        onClick = {
+                            selectedBanker?.let { banker ->
+                                coroutineScope.launch {
+                                    firestoreService.updatePlayer(
+                                        uid = banker.uid,
+                                        path = "Games/$gameId/Players", // Ruta a la colección de jugadores
+                                        field = "Banker"
+                                    )
+                                }
+                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(45.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.Gray)
+                    ) {
+                        Text(
+                            text = "Assign Banker",
+                            textAlign = TextAlign.Center,
+                            fontSize = 17.sp
+                        )
+                    }
+
                     Spacer(modifier = Modifier.height(8.dp))
                 }
 
