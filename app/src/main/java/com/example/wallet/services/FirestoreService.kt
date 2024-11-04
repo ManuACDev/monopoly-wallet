@@ -1,6 +1,8 @@
 package com.example.wallet.services
 
+import com.example.wallet.models.Bank
 import com.example.wallet.models.GameConfig
+import com.example.wallet.models.Parking
 import com.example.wallet.models.Player
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
@@ -87,16 +89,46 @@ class FirestoreService {
     }
 
 
-    // Obtener información de una partida en tiempo real
-    fun getGameUpdates(gameId: String, onGameUpdated: (Map<String, Any>) -> Unit) {
-        firestore.collection("Games")
+    // Obtener dinero de la banca y parking
+    fun getBanK(gameId: String, updatedBank: (Bank?) -> Unit, updatedParking: (Parking?) -> Unit) {
+        val bankRef = firestore.collection("Games")
             .document(gameId)
-            .addSnapshotListener { snapshot, error ->
-                if (error != null || snapshot == null || !snapshot.exists()) {
-                    return@addSnapshotListener
+            .collection("Bank")
+            .document("Banca")
+
+        val parkingRef = firestore.collection("Games")
+            .document(gameId)
+            .collection("Bank")
+            .document("Parking")
+
+        // Recupera Banca
+        bankRef.get()
+            .addOnSuccessListener { bankDocument ->
+                val banca = bankDocument?.let {
+                    Bank(
+                        name = it.getString("Name") ?: "Banca",
+                        money = it.getLong("Money") ?: 0L
+                    )
                 }
-                val gameData = snapshot.data ?: return@addSnapshotListener
-                onGameUpdated(gameData)
+                updatedBank(banca)
+
+                // Recupera Parking
+                parkingRef.get()
+                    .addOnSuccessListener { parkingDocument ->
+                        val parking = parkingDocument?.let {
+                            Parking(
+                                name = it.getString("Name") ?: "Parking",
+                                money = it.getLong("Money") ?: 0L
+                            )
+                        }
+                        updatedParking(parking)
+                    }.addOnFailureListener { error ->
+                        println("Error al recuperar el parking: ${error.message}")
+                        updatedParking(null)
+                    }
+            }.addOnFailureListener { error ->
+                println("Error al recuperar la banca: ${error.message}")
+                updatedBank(null)
             }
     }
 
