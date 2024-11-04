@@ -43,7 +43,7 @@ class FirestoreService {
     }
 
     // Unirse a una partida
-    suspend fun joinGame(gameId: String, playerName: String, userId: String, admin: Boolean) {
+    suspend fun joinGame(gameId: String, playerName: String, userId: String, admin: Boolean, banker: Boolean) {
         try {
             val gameRef = firestore.collection("Games").document(gameId)
             // Obtener el documento de la partida
@@ -67,7 +67,8 @@ class FirestoreService {
                         "Name" to playerName,
                         "Money" to initialMoney,
                         "Uid" to userId,
-                        "Admin" to admin
+                        "Admin" to admin,
+                        "Banker" to banker
                     )
                     playersRef.add(playerData).await()
 
@@ -178,7 +179,8 @@ class FirestoreService {
                         name = document.getString("Name") ?: "Invitado",
                         money = document.getLong("Money") ?: 0L,
                         uid = document.getString("Uid") ?: uid,
-                        admin = document.getBoolean("Admin") ?: false
+                        admin = document.getBoolean("Admin") ?: false,
+                        banker = document.getBoolean("Banker") ?: false
                     )
                 }
                 onPlayerUpdated(player)

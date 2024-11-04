@@ -102,10 +102,11 @@ fun SendDetails(gameId: String, uid: String) {
                     val money = playerData["Money"] as? Long
                     val playerUid = playerData["Uid"] as? String
                     val admin = playerData["Admin"] as? Boolean
+                    val banker = playerData["Banker"] as? Boolean
 
                     // Excluye al usuario actual y asegura que todos los campos no sean nulos
-                    if (name != null && money != null && playerUid != null && playerUid != uid && admin != null) {
-                        Player(name, money, playerUid, admin)
+                    if (name != null && money != null && playerUid != null && playerUid != uid && admin != null && banker != null) {
+                        Player(name, money, playerUid, admin, banker)
                     } else {
                         null
                     }

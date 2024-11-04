@@ -120,9 +120,10 @@ fun BankActions(gameId: String, uid: String) {
                     val money = playerData["Money"] as? Long
                     val playerUid = playerData["Uid"] as? String
                     val admin = playerData["Admin"] as? Boolean
+                    val banker = playerData["Banker"] as? Boolean
 
-                    if (name != null && money != null && playerUid != null && admin != null) {
-                        Player(name, money, playerUid, admin)
+                    if (name != null && money != null && playerUid != null && admin != null && banker != null) {
+                        Player(name, money, playerUid, admin, banker)
                     } else {
                         null
                     }
