@@ -187,6 +187,35 @@ class FirestoreService {
             }
     }
 
+    // Actualizar jugador
+    suspend fun updatePlayer(uid: String, path: String, field: String) {
+        try {
+            // Obtener el documento que coincide con el Uid proporcionado
+            val querySnapshot = firestore.collection(path)
+                .whereEqualTo("Uid", uid)
+                .get()
+                .await()
+
+            // Si el documento existe, realizar la actualización
+            if (!querySnapshot.isEmpty) {
+                for (document in querySnapshot.documents) {
+                    // Obtener el valor actual del campo
+                    val currentValue = document.getBoolean(field) ?: false
+                    // Invertir el valor
+                    val newValue = !currentValue
+
+                    // Actualizar el campo con el valor invertido
+                    document.reference.update(field, newValue).await()
+                    println("Campo $field actualizado a $newValue para el jugador con uid $uid en la colección $path")
+                }
+            } else {
+                println("No se encontró un jugador con el uid $uid en la colección $path")
+            }
+        } catch (e: Exception) {
+            println("Error al actualizar el campo $field: ${e.message}")
+        }
+    }
+
     // Recuperar los jugadores
     fun getGamePlayers(gameId: String, onPlayersUpdated: (List<Map<String, Any>>) -> Unit) {
         firestore.collection("Games")
