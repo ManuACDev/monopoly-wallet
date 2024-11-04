@@ -26,6 +26,7 @@ import com.example.wallet.ui.screens.CenterAlignedAppBar
 import com.example.wallet.ui.screens.GameOptions
 import com.example.wallet.ui.screens.GameScreen
 import com.example.wallet.ui.screens.HomeScreen
+import com.example.wallet.ui.screens.actions.AccessBankScreen
 import com.example.wallet.ui.screens.actions.LiveChatScreen
 import com.example.wallet.ui.screens.actions.RollDiceScreen
 import com.example.wallet.ui.screens.actions.SendMoneyScreen
@@ -71,7 +72,7 @@ fun MyApp(authService: AuthService, firestoreService: FirestoreService) {
                 val currentBackStackEntry = navController.currentBackStackEntryAsState().value
                 val route = currentBackStackEntry?.destination?.route
                 val showBackButton = route == "game_options" || route == "roll_dice/{gameId}/{playerName}"
-                        || route == "live_chat/{gameId}" || route == "send_money/{gameId}"
+                        || route == "live_chat/{gameId}" || route == "send_money/{gameId}" || route == "access_bank/{gameId}"
                 val showLogoutButton = route == "home"
 
                 CenterAlignedAppBar(
@@ -80,6 +81,7 @@ fun MyApp(authService: AuthService, firestoreService: FirestoreService) {
                         "roll_dice/{gameId}/{playerName}" -> "Roll Dice"
                         "live_chat/{gameId}" -> "Live Chat"
                         "send_money/{gameId}" -> "Send Money"
+                        "access_bank/{gameId}" -> "Access Bank"
                         else -> "Monopoly"
                     },
                     showBackButton = showBackButton,
@@ -185,6 +187,21 @@ fun MyApp(authService: AuthService, firestoreService: FirestoreService) {
                         val gameId = backStackEntry.arguments?.getString("gameId")
                         if (gameId != null) {
                             SendMoneyScreen(
+                                modifier = Modifier
+                                    .padding(innerPadding)
+                                    .fillMaxSize(),
+                                gameId = gameId
+                            )
+                        }
+                    }
+
+                    composable(
+                        "access_bank/{gameId}",
+                        arguments = listOf(navArgument("gameId") { type = NavType.StringType })
+                    ) {backStackEntry ->
+                        val gameId = backStackEntry.arguments?.getString("gameId")
+                        if (gameId != null) {
+                            AccessBankScreen(
                                 modifier = Modifier
                                     .padding(innerPadding)
                                     .fillMaxSize(),
