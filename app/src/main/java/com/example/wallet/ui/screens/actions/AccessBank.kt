@@ -49,6 +49,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.wallet.models.Bank
+import com.example.wallet.models.Parking
 import com.example.wallet.models.Player
 import com.example.wallet.services.AuthService
 import com.example.wallet.services.FirestoreService
@@ -90,6 +92,9 @@ fun BankActions(gameId: String, uid: String) {
     var banker by remember { mutableStateOf(false) }
 
     val players = remember { mutableStateListOf<Player>() }
+
+    var bank by remember { mutableStateOf<Bank?>(null) }
+    var park by remember { mutableStateOf<Parking?>(null) }
 
     var amount by remember { mutableStateOf("") }
 
@@ -135,6 +140,12 @@ fun BankActions(gameId: String, uid: String) {
                 }
             )
         }
+
+        firestoreService.getBanK(gameId, { updatedBank ->
+            updatedBank?.let { bank = it }
+        }, { updatedParking ->
+            updatedParking?.let { park = it }
+        })
     }
 
     Column(
@@ -291,21 +302,25 @@ fun BankActions(gameId: String, uid: String) {
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceAround
                 ) {
-                    FromOptionCard(
-                        icon = Icons.Default.AccountBalance,
-                        text = "Bank",
-                        amount = 100000000 ,
-                        isSelected = transferFrom == "Bank",
-                        onClick = { transferFrom = "Bank" }
-                    )
+                    bank?.let {
+                        FromOptionCard(
+                            icon = Icons.Default.AccountBalance,
+                            text = "Bank",
+                            amount = it.money,
+                            isSelected = transferFrom == "Bank",
+                            onClick = { transferFrom = "Bank" }
+                        )
+                    }
 
-                    FromOptionCard(
-                        icon = Icons.Default.LocalParking,
-                        text = "Parking",
-                        amount = 2500,
-                        isSelected = transferFrom == "Parking",
-                        onClick = { transferFrom = "Parking" }
-                    )
+                    park?.let {
+                        FromOptionCard(
+                            icon = Icons.Default.LocalParking,
+                            text = "Parking",
+                            amount = it.money,
+                            isSelected = transferFrom == "Parking",
+                            onClick = { transferFrom = "Parking" }
+                        )
+                    }
                 }
 
                 // DropdownMenu para seleccionar la cantidad si la opción es Bank y Auto
@@ -467,7 +482,7 @@ fun BankActions(gameId: String, uid: String) {
 }
 
 @Composable
-fun FromOptionCard(icon: ImageVector, text: String, amount: Int, isSelected: Boolean, onClick: () -> Unit) {
+fun FromOptionCard(icon: ImageVector, text: String, amount: Long, isSelected: Boolean, onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .size(125.dp)
