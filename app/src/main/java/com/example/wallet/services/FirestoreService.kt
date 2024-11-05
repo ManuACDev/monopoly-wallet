@@ -375,4 +375,77 @@ class FirestoreService {
             }
         }
     }
+
+    // Recibir dinero
+    suspend fun receiveMoney(amount: Int, recipientPlayer: Player, gameId: String, transferFrom: String) {
+        val gameRef = firestore.collection("Games").document(gameId)
+
+        when (transferFrom) {
+            "Bank" -> {
+                // Obtener documentos de recipient y bank fuera de la transacción
+                val recipientSnapshot = gameRef.collection("Players")
+                    .whereEqualTo("Uid", recipientPlayer.uid)
+                    .get()
+                    .await()
+                    .documents
+                    .firstOrNull()
+                    ?: throw Exception("Error: No se encontró el jugador destinatario con UID: ${recipientPlayer.uid}")
+
+                val bankRef = gameRef.collection("Bank").document("Banca")
+                val recipientRef = recipientSnapshot.reference
+
+                firestore.runTransaction { transaction ->
+                    // Leer el saldo del banco y del destinatario al inicio
+                    val bankMoney = transaction.get(bankRef).getLong("Money") ?: 0
+                    val recipientMoney = transaction.get(recipientRef).getLong("Money") ?: 0
+
+                    // Verificar si la banca tiene suficiente dinero
+                    if (bankMoney < amount) throw Exception("Error: Fondos insuficientes en la banca.")
+
+                    // Actualizar el saldo del banco
+                    transaction.update(bankRef, "Money", bankMoney - amount)
+
+                    // Actualizar el saldo del destinatario
+                    transaction.update(recipientRef, "Money", recipientMoney + amount)
+                }.addOnSuccessListener {
+                    println("Transferencia desde la banca al jugador completada con éxito.")
+                }.addOnFailureListener { e ->
+                    println("Error en la transferencia desde la banca: ${e.message}")
+                }
+            }
+
+            "Parking" -> {
+                // Obtener documentos de recipient y parking fuera de la transacción
+                val recipientSnapshot = gameRef.collection("Players")
+                    .whereEqualTo("Uid", recipientPlayer.uid)
+                    .get()
+                    .await()
+                    .documents
+                    .firstOrNull()
+                    ?: throw Exception("Error: No se encontró el jugador destinatario con UID: ${recipientPlayer.uid}")
+
+                val parkingRef = gameRef.collection("Bank").document("Parking")
+                val recipientRef = recipientSnapshot.reference
+
+                firestore.runTransaction { transaction ->
+                    // Leer el saldo del parking y del destinatario al inicio
+                    val parkingMoney = transaction.get(parkingRef).getLong("Money") ?: 0
+                    val recipientMoney = transaction.get(recipientRef).getLong("Money") ?: 0
+
+                    // Verificar si el parking tiene suficiente dinero
+                    if (parkingMoney < amount) throw Exception("Error: Fondos insuficientes en el parking.")
+
+                    // Actualizar el saldo del parking
+                    transaction.update(parkingRef, "Money", parkingMoney - amount)
+
+                    // Actualizar el saldo del destinatario
+                    transaction.update(recipientRef, "Money", recipientMoney + amount)
+                }.addOnSuccessListener {
+                    println("Transferencia desde el parking al jugador completada con éxito.")
+                }.addOnFailureListener { e ->
+                    println("Error en la transferencia desde el parking: ${e.message}")
+                }
+            }
+        }
+    }
 }
