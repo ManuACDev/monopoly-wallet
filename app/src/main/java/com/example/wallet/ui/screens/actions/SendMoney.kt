@@ -12,7 +12,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBalance
 import androidx.compose.material.icons.filled.ArrowDropDown
@@ -60,10 +62,13 @@ fun SendMoneyScreen(modifier: Modifier = Modifier, gameId: String) {
     val authService = AuthService()
     val uid = authService.currentUser?.uid
 
+    val scrollState = rememberScrollState()
+
     // Crear la pantalla con un layout vertical
     Column(modifier = modifier
         .fillMaxSize() // La pantalla ocupa tdo el tamaño disponible
-        .padding(16.dp), // Padding a toda la pantalla
+        .padding(16.dp) // Padding a toda la pantalla
+        .verticalScroll(scrollState), // Habilitar scroll vertical
         verticalArrangement = Arrangement.Top, // Coloca los elementos en la parte superior
         horizontalAlignment = Alignment.CenterHorizontally // Centra los elementos horizontalmente
     ) {
