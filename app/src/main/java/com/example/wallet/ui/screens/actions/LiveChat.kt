@@ -18,8 +18,10 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.AccountBalance
 import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.Casino
+import androidx.compose.material.icons.filled.LocalParking
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -145,6 +147,8 @@ fun getMessageIcon(type: String): ImageVector {
     return when (type) {
         "dice_roll" -> Icons.Default.Casino
         "send_money" -> Icons.Default.AttachMoney
+        "acs_bank" -> Icons.Default.AccountBalance
+        "acs_park" -> Icons.Default.LocalParking
         else -> Icons.AutoMirrored.Filled.Send
     }
 }

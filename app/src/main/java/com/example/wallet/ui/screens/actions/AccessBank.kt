@@ -449,18 +449,25 @@ fun BankActions(gameId: String, uid: String) {
                                         gameId = gameId,
                                         transferFrom = transferFrom
                                     )
-                                    /*val message: String
+                                    val message = "ha enviado $amount$ al jugador ${selectedPlayer?.name}"
+                                    val name: String
+                                    val type: String
                                     if (transferFrom == "Bank") {
-                                        message = "La Banca ha enviado $amount$ al jugador ${selectedPlayer?.name}"
+                                        name = "La Banca"
+                                        type = "acs_bank"
                                     } else if (transferFrom == "Parking") {
-                                        message = "ha enviado $amount$ a la Banca"
+                                        name = "El Parking"
+                                        type = "acs_park"
+                                    } else {
+                                        name = "La entidad"
+                                        type = "acs_bank"
                                     }
                                     firestoreService.sendChatMessage(
                                         gameId = gameId,
-                                        playerName = player!!.name,
+                                        playerName = name,
                                         message = message,
-                                        type = "send_money"
-                                    )*/
+                                        type = type
+                                    )
                                 } catch (e: Exception) {
                                     println("Error: ${e.message}")
                                 }
