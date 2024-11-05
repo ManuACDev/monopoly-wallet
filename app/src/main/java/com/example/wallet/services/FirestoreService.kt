@@ -101,35 +101,39 @@ class FirestoreService {
             .collection("Bank")
             .document("Parking")
 
-        // Recupera Banca
-        bankRef.get()
-            .addOnSuccessListener { bankDocument ->
-                val banca = bankDocument?.let {
-                    Bank(
-                        name = it.getString("Name") ?: "Banca",
-                        money = it.getLong("Money") ?: 0L
-                    )
-                }
-                updatedBank(banca)
-
-                // Recupera Parking
-                parkingRef.get()
-                    .addOnSuccessListener { parkingDocument ->
-                        val parking = parkingDocument?.let {
-                            Parking(
-                                name = it.getString("Name") ?: "Parking",
-                                money = it.getLong("Money") ?: 0L
-                            )
-                        }
-                        updatedParking(parking)
-                    }.addOnFailureListener { error ->
-                        println("Error al recuperar el parking: ${error.message}")
-                        updatedParking(null)
-                    }
-            }.addOnFailureListener { error ->
-                println("Error al recuperar la banca: ${error.message}")
+        // Escuchar cambios en Banca en tiempo real
+        bankRef.addSnapshotListener { bankDocument, error ->
+            if (error != null || bankDocument == null) {
+                println("Error al escuchar cambios en la banca: ${error?.message}")
                 updatedBank(null)
+                return@addSnapshotListener
             }
+
+            val banca = bankDocument.let {
+                Bank(
+                    name = it.getString("Name") ?: "Banca",
+                    money = it.getLong("Money") ?: 0L
+                )
+            }
+            updatedBank(banca)
+        }
+
+        // Escuchar cambios en Parking en tiempo real
+        parkingRef.addSnapshotListener { parkingDocument, error ->
+            if (error != null || parkingDocument == null) {
+                println("Error al escuchar cambios en el parking: ${error?.message}")
+                updatedParking(null)
+                return@addSnapshotListener
+            }
+
+            val parking = parkingDocument.let {
+                Parking(
+                    name = it.getString("Name") ?: "Parking",
+                    money = it.getLong("Money") ?: 0L
+                )
+            }
+            updatedParking(parking)
+        }
     }
 
     fun getPlayersUpdates(gameId: String, onGameUpdated: (Map<String, Any>) -> Unit) {
