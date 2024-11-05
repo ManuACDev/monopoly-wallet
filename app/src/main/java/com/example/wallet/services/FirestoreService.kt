@@ -190,7 +190,12 @@ class FirestoreService {
     suspend fun getGameConfig(gameId: String): GameConfig? {
         return try {
             val snapshot = firestore.collection("Games").document(gameId).get().await()
-            snapshot.toObject(GameConfig::class.java) // Convierte el documento en un objeto GameConfig
+
+            snapshot.toObject(GameConfig::class.java)?.let { gameConfig ->
+            // Verificar y convertir a booleano
+            val isBankAutomatic = snapshot.getBoolean("isBankAutomatic") ?: false
+                gameConfig.copy(isBankAutomatic = isBankAutomatic)
+            }
         } catch (e: Exception) {
             println("Error al recuperar la configuración del juego: ${e.message}")
             null
