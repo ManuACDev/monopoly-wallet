@@ -5,7 +5,9 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -38,10 +40,13 @@ import kotlinx.coroutines.withContext
 
 @Composable
 fun HomeScreen(modifier: Modifier = Modifier, navController: NavController) {
+    val scrollState = rememberScrollState()
+
     // Crear la pantalla con un layout vertical
     Column(modifier = modifier
         .fillMaxSize() // La pantalla ocupa tdo el tamaño disponible
-        .padding(16.dp), // Padding a toda la pantalla
+        .padding(16.dp) // Padding a toda la pantalla
+        .verticalScroll(scrollState), // Habilitar scroll vertical
         verticalArrangement = Arrangement.SpaceEvenly, // Coloca los elementos en la parte superior
         horizontalAlignment = Alignment.CenterHorizontally // Centra los elementos horizontalmente
     ) {
