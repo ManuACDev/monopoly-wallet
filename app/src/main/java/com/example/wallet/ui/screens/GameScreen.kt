@@ -13,7 +13,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.automirrored.filled.Chat
@@ -59,6 +61,8 @@ fun GameScreen(modifier: Modifier = Modifier, gameId: String, navController: Nav
     val authService = AuthService()
     val uid = authService.currentUser?.uid
 
+    val scrollState = rememberScrollState()
+
     LaunchedEffect(gameId, uid) {
         uid?.let {
             val firestoreService = FirestoreService()
@@ -72,7 +76,8 @@ fun GameScreen(modifier: Modifier = Modifier, gameId: String, navController: Nav
     // Crear la pantalla con un layout vertical
     Column(modifier = modifier
         .fillMaxSize() // La pantalla ocupa tdo el tamaño disponible
-        .padding(16.dp), // Padding a toda la pantalla
+        .padding(16.dp) // Padding a toda la pantalla
+        .verticalScroll(scrollState), // Habilitar scroll vertical
         verticalArrangement = Arrangement.SpaceEvenly, // Separar elementos
         horizontalAlignment = Alignment.CenterHorizontally // Centra los elementos horizontalmente
     ) {
@@ -207,26 +212,22 @@ fun ActionsGame(navController: NavController, gameId: String, playerName: String
         GameActionRow(
             icon = Icons.AutoMirrored.Filled.Send,
             text = "Send Money",
-            onClick = { navController.navigate("send_money/$gameId") },
-            modifier = Modifier.weight(1f)
+            onClick = { navController.navigate("send_money/$gameId") }
         )
         GameActionRow(
             icon = Icons.Default.AccountBalance,
             text = "Access Bank",
-            onClick = { navController.navigate("access_bank/$gameId") },
-            modifier = Modifier.weight(1f)
+            onClick = { navController.navigate("access_bank/$gameId") }
         )
         GameActionRow(
             icon = Icons.Default.Casino,
             text = "Roll Dice",
-            onClick = { navController.navigate("roll_dice/$gameId/$playerName") },
-            modifier = Modifier.weight(1f)
+            onClick = { navController.navigate("roll_dice/$gameId/$playerName") }
         )
         GameActionRow(
             icon = Icons.AutoMirrored.Filled.Chat,
             text = "Live Chat",
-            onClick = { navController.navigate("live_chat/$gameId") },
-            modifier = Modifier.weight(1f)
+            onClick = { navController.navigate("live_chat/$gameId") }
         )
     }
 }
