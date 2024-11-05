@@ -148,6 +148,14 @@ fun BankActions(gameId: String, uid: String) {
         })
     }
 
+    LaunchedEffect(transferFrom) {
+        amount = when (transferFrom) {
+            "Bank" -> ""  // Restablece a vacío para que se ingrese manualmente
+            "Parking" -> park?.money.toString()  // Asigna el total del parking
+            else -> amount  // Mantiene el valor si no es Bank ni Parking
+        }
+    }
+
     Column(
         modifier = Modifier
             .padding(8.dp),
@@ -432,23 +440,20 @@ fun BankActions(gameId: String, uid: String) {
                 Button(
                     onClick = {
                         val amountToTransfer = amount.toIntOrNull()
-                        if (player != null && amountToTransfer != null && amountToTransfer > 0) {
+                        if (selectedPlayer != null && amountToTransfer != null && amountToTransfer > 0) {
                             coroutineScope.launch {
                                 try {
-                                    /*firestoreService.transferMoney(
+                                    firestoreService.receiveMoney(
                                         amount = amountToTransfer,
-                                        sender = player!!,
+                                        recipientPlayer = selectedPlayer!!,
                                         gameId = gameId,
-                                        transferTo = transferTo,
-                                        recipientPlayer = if (transferTo == "Player") selectedPlayer else null
+                                        transferFrom = transferFrom
                                     )
-                                    val message: String
-                                    if (transferTo == "Player") {
-                                        message = "ha enviado $amount$ al jugador ${selectedPlayer?.name}"
-                                    } else if (transferTo == "Bank") {
+                                    /*val message: String
+                                    if (transferFrom == "Bank") {
+                                        message = "La Banca ha enviado $amount$ al jugador ${selectedPlayer?.name}"
+                                    } else if (transferFrom == "Parking") {
                                         message = "ha enviado $amount$ a la Banca"
-                                    } else {
-                                        message = "ha enviado $amount$ al Parking"
                                     }
                                     firestoreService.sendChatMessage(
                                         gameId = gameId,
