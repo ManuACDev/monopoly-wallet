@@ -440,6 +440,9 @@ fun BankActions(gameId: String, uid: String) {
                 Button(
                     onClick = {
                         val amountToTransfer = amount.toIntOrNull()
+                        if (selectedPlayer == null && auto == true) {
+                            selectedPlayer = player
+                        }
                         if (selectedPlayer != null && amountToTransfer != null && amountToTransfer > 0) {
                             coroutineScope.launch {
                                 try {
