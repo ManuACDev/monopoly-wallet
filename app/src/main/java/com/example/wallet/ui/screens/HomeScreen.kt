@@ -14,6 +14,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -33,7 +34,6 @@ import com.example.wallet.R
 import com.example.wallet.services.AuthService
 import com.example.wallet.services.FirestoreService
 import com.example.wallet.ui.theme.*
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -144,11 +144,14 @@ fun CustomScreen(navController: NavController) {
 
 @Composable
 fun JoinScreen(navController: NavController) {
+    val coroutineScope = rememberCoroutineScope()
     var showJoinDialog by remember { mutableStateOf(false) }
     var showToastMessage by remember { mutableStateOf<String?>(null) }
     val context = LocalContext.current // Obtener el contexto fuera de composable
     val firestoreService = FirestoreService()
     val authService = AuthService()
+    var isButtonEnabled by remember { mutableStateOf(true) }
+    var isGameJoined by remember { mutableStateOf(false) }
 
     showToastMessage?.let { message ->
         LaunchedEffect(message) {
@@ -204,8 +207,12 @@ fun JoinScreen(navController: NavController) {
                 if (showJoinDialog) {
                     JoinGameDialog(
                         onDismiss = { showJoinDialog = false },
-                        onJoinGame = { gameId, playerName ->
-                            CoroutineScope(Dispatchers.IO).launch {
+                        onJoinGame = onJoinGame@ { gameId, playerName ->
+                            if (isGameJoined) return@onJoinGame
+                            isButtonEnabled = false
+                            isGameJoined = true
+
+                            coroutineScope.launch {
                                 try {
                                     val userId = authService.currentUser?.uid
                                     if (userId != null) {
@@ -215,14 +222,21 @@ fun JoinScreen(navController: NavController) {
                                                 popUpTo("home") { inclusive = true } // Elimina HomeScreen de la pila
                                             }
                                         }
+                                    } else {
+                                        println("Error: error al unirse a la partida.")
+                                        isButtonEnabled = true
+                                        isGameJoined = false
                                     }
                                 } catch (e: Exception) {
                                     withContext(Dispatchers.Main) {
                                         showToastMessage = e.message ?: "Error al unirse a la partida"
                                     }
+                                } finally {
+                                    isButtonEnabled = true
                                 }
                             }
-                        }
+                        },
+                        isButtonEnabled = isButtonEnabled
                     )
                 }
             }
@@ -242,10 +256,9 @@ fun JoinScreen(navController: NavController) {
 }
 
 @Composable
-fun JoinGameDialog(onDismiss: () -> Unit, onJoinGame: (String, String) -> Unit) {
+fun JoinGameDialog(onDismiss: () -> Unit, onJoinGame: (String, String) -> Unit, isButtonEnabled: Boolean) {
     var gameId by remember { mutableStateOf("") }
     var playerName by remember { mutableStateOf("") }
-    var isButtonEnabled by remember { mutableStateOf(true) }
 
     AlertDialog(
         onDismissRequest = { onDismiss() },
@@ -309,14 +322,13 @@ fun JoinGameDialog(onDismiss: () -> Unit, onJoinGame: (String, String) -> Unit) 
         confirmButton = {
             Button(
                 onClick = {
-                    if (gameId.isNotEmpty() && playerName.isNotEmpty()) {
-                        isButtonEnabled = false
-                        try {
-                            onJoinGame(gameId, playerName) // Pasar tanto el gameId como el playerName
-                        } catch (e: Exception) {
-                            println("Error al unirse al juego: ${e.message}")
-                        } finally {
-                            isButtonEnabled = true
+                    if (isButtonEnabled) {
+                        if (gameId.isNotEmpty() && playerName.isNotEmpty()) {
+                            try {
+                                onJoinGame(gameId, playerName) // Pasar tanto el gameId como el playerName
+                            } catch (e: Exception) {
+                                println("Error al unirse al juego: ${e.message}")
+                            }
                         }
                     }
                 },
@@ -324,7 +336,10 @@ fun JoinGameDialog(onDismiss: () -> Unit, onJoinGame: (String, String) -> Unit) 
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(45.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = RoyalBlue)
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = RoyalBlue,
+                    disabledContainerColor = PickledBluewood
+                )
             ) {
                 Text(
                     text = "Join",
