@@ -57,8 +57,6 @@ fun HomeScreen(modifier: Modifier = Modifier, navController: NavController) {
 
 @Composable
 fun CustomScreen(navController: NavController) {
-    var isButtonEnabled by remember { mutableStateOf(true) }
-
     Column(
         modifier = Modifier
             .padding(8.dp),
@@ -118,16 +116,12 @@ fun CustomScreen(navController: NavController) {
         // Botón de "Start Game" centrado
         Button(
             onClick = {
-                isButtonEnabled = false
                 try {
                     navController.navigate("game_options")
                 } catch (e: Exception) {
                     println("Error al navegar: ${e.message}")
-                } finally {
-                    isButtonEnabled = true
                 }
             },
-            enabled = isButtonEnabled,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(45.dp),
