@@ -29,6 +29,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -102,8 +103,7 @@ fun GameContent(onGameCreated: (GameConfig, String) -> Unit, isButtonEnabled: Bo
     val buttonEnabled = numPlayers >= 2 &&
             initialMoney.isNotEmpty() &&
             passGoMoney.isNotEmpty() &&
-            creatorName.isNotEmpty() &&
-            isButtonEnabled
+            creatorName.isNotEmpty()
 
     LazyColumn(
         modifier = Modifier
@@ -347,11 +347,11 @@ fun GameContent(onGameCreated: (GameConfig, String) -> Unit, isButtonEnabled: Bo
                         onGameCreated(gameConfig, creatorName) // Configuración de la partida y el nombre del creador
                     }
                 },
-                enabled = buttonEnabled,
+                enabled = isButtonEnabled,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(45.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = RoyalBlue)
+                colors = ButtonDefaults.buttonColors(containerColor = if (isButtonEnabled) RoyalBlue else Color.Gray)
             ) {
                 Text(
                     text = "Create Game",
