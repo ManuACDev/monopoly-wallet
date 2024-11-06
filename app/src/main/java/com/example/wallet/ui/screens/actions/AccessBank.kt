@@ -105,6 +105,7 @@ fun BankActions(gameId: String, uid: String) {
     var expandedBanker by remember { mutableStateOf(false) }
 
     var transferFrom by remember { mutableStateOf("Player") }
+    var isTransferInProgress by remember { mutableStateOf(false) }
 
     val firestoreService = FirestoreService()
     val coroutineScope = rememberCoroutineScope()
@@ -444,6 +445,7 @@ fun BankActions(gameId: String, uid: String) {
                             selectedPlayer = player
                         }
                         if (selectedPlayer != null && amountToTransfer != null && amountToTransfer > 0) {
+                            isTransferInProgress = true
                             coroutineScope.launch {
                                 try {
                                     firestoreService.receiveMoney(
@@ -453,17 +455,10 @@ fun BankActions(gameId: String, uid: String) {
                                         transferFrom = transferFrom
                                     )
                                     val message = "ha enviado $amount$ al jugador ${selectedPlayer?.name}"
-                                    val name: String
-                                    val type: String
-                                    if (transferFrom == "Bank") {
-                                        name = "La Banca"
-                                        type = "acs_bank"
-                                    } else if (transferFrom == "Parking") {
-                                        name = "El Parking"
-                                        type = "acs_park"
-                                    } else {
-                                        name = "La entidad"
-                                        type = "acs_bank"
+                                    val (name, type) = when (transferFrom) {
+                                        "Bank" -> "La Banca" to "acs_bank"
+                                        "Parking" -> "El Parking" to "acs_park"
+                                        else -> "La entidad" to "acs_bank"
                                     }
                                     firestoreService.sendChatMessage(
                                         gameId = gameId,
@@ -471,8 +466,11 @@ fun BankActions(gameId: String, uid: String) {
                                         message = message,
                                         type = type
                                     )
+                                    amount = ""
                                 } catch (e: Exception) {
                                     println("Error: ${e.message}")
+                                } finally {
+                                    isTransferInProgress = false
                                 }
                             }
                         } else {
@@ -480,15 +478,20 @@ fun BankActions(gameId: String, uid: String) {
                             println("Error: Ingrese un monto válido para transferir.")
                         }
                     },
+                    enabled = !isTransferInProgress,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(45.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = RoyalBlue)
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = RoyalBlue,
+                        disabledContainerColor = PickledBluewood
+                    )
                 ) {
                     Text(
                         text = "Transfer",
                         textAlign = TextAlign.Center,
-                        fontSize = 17.sp
+                        fontSize = 17.sp,
+                        color = Color.White
                     )
                 }
             }
