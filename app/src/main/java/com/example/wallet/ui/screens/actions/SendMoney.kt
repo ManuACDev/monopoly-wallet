@@ -43,6 +43,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -89,6 +90,7 @@ fun SendDetails(gameId: String, uid: String) {
     var selectedPlayer by remember { mutableStateOf<Player?>(null) }
     var expanded by remember { mutableStateOf(false) }
     var transferTo by remember { mutableStateOf("Player") }
+    var isTransferInProgress by remember { mutableStateOf(false) }
 
     val firestoreService = FirestoreService()
     val coroutineScope = rememberCoroutineScope()
@@ -314,6 +316,7 @@ fun SendDetails(gameId: String, uid: String) {
                     onClick = {
                         val amountToTransfer = amount.toIntOrNull()
                         if (player != null && amountToTransfer != null && amountToTransfer > 0) {
+                            isTransferInProgress = true
                             coroutineScope.launch {
                                 try {
                                     firestoreService.transferMoney(
@@ -323,13 +326,11 @@ fun SendDetails(gameId: String, uid: String) {
                                         transferTo = transferTo,
                                         recipientPlayer = if (transferTo == "Player") selectedPlayer else null
                                     )
-                                    val message: String
-                                    if (transferTo == "Player") {
-                                         message = "ha enviado $amount$ al jugador ${selectedPlayer?.name}"
-                                    } else if (transferTo == "Bank") {
-                                        message = "ha enviado $amount$ a la Banca"
-                                    } else {
-                                        message = "ha enviado $amount$ al Parking"
+                                    val message = when (transferTo) {
+                                        "Player" -> "ha enviado $amount$ al jugador ${selectedPlayer?.name}"
+                                        "Bank" -> "ha enviado $amount$ a la Banca"
+                                        "Parking" -> "ha enviado $amount$ al Parking"
+                                        else -> ""
                                     }
                                     firestoreService.sendChatMessage(
                                         gameId = gameId,
@@ -337,8 +338,11 @@ fun SendDetails(gameId: String, uid: String) {
                                         message = message,
                                         type = "send_money"
                                     )
+                                    amount = ""
                                 } catch (e: Exception) {
                                     println("Error: ${e.message}")
+                                } finally {
+                                    isTransferInProgress = false
                                 }
                             }
                         } else {
@@ -346,15 +350,20 @@ fun SendDetails(gameId: String, uid: String) {
                             println("Error: Ingrese un monto válido para transferir.")
                         }
                     },
+                    enabled = !isTransferInProgress,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(45.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = RoyalBlue)
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = RoyalBlue,
+                        disabledContainerColor = PickledBluewood
+                    )
                 ) {
                     Text(
                         text = "Transfer",
                         textAlign = TextAlign.Center,
-                        fontSize = 17.sp
+                        fontSize = 17.sp,
+                        color = Color.White
                     )
                 }
             }
