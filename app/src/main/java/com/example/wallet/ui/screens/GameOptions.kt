@@ -45,6 +45,9 @@ import java.util.UUID
 @Composable
 fun GameOptions(modifier: Modifier = Modifier, navController: NavController) {
     val coroutineScope = rememberCoroutineScope()
+    var isButtonEnabled by remember { mutableStateOf(true) }
+    var isGameCreated by remember { mutableStateOf(false) }
+
     Column(
         modifier = modifier
             .fillMaxSize() // La pantalla ocupa el tamaño disponible
@@ -54,23 +57,34 @@ fun GameOptions(modifier: Modifier = Modifier, navController: NavController) {
     ) {
         // Aquí pasamos un valor a `onGameCreated` y `onBack`
         GameContent(
-            onGameCreated = { config, creatorName ->
-                try {
-                    coroutineScope.launch {
+            onGameCreated = onGameCreated@{ config, creatorName ->
+                if (isGameCreated) return@onGameCreated
+                isButtonEnabled = false
+                isGameCreated = true
+
+                coroutineScope.launch {
+                    try {
                         val gameId = createGameInFirestore(config, creatorName) // Llamar a la función suspend
                         println("Partida creada con la configuración: $config y creador: $creatorName")
 
                         if (gameId != null) {
                             // Navegar a GameScreen pasando solo el gameId
-                            navController.navigate("gameScreen/$gameId")
+                            navController.navigate("gameScreen/$gameId") {
+                                popUpTo("game_options") { inclusive = true } // Elimina la pantalla anterior
+                            }
                         } else {
                             println("Error: el ID de la partida es inválido.")
+                            isButtonEnabled = true
+                            isGameCreated = false
                         }
+                    } catch (e: Exception) {
+                        println("Error al crear la partida: ${e.message}")
+                    } finally {
+                        isButtonEnabled = true
                     }
-                } catch (e: Exception) {
-                    println("Error al crear la partida: ${e.message}")
                 }
-            }
+            },
+            isButtonEnabled = isButtonEnabled
         )
     }
 }
@@ -78,7 +92,7 @@ fun GameOptions(modifier: Modifier = Modifier, navController: NavController) {
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
-fun GameContent(onGameCreated: (GameConfig, String) -> Unit) {
+fun GameContent(onGameCreated: (GameConfig, String) -> Unit, isButtonEnabled: Boolean) {
     var numPlayers by remember { mutableStateOf(2) }
     var initialMoney by remember { mutableStateOf("300000") }
     var passGoMoney by remember { mutableStateOf("40000") }
@@ -88,7 +102,8 @@ fun GameContent(onGameCreated: (GameConfig, String) -> Unit) {
     val buttonEnabled = numPlayers >= 2 &&
             initialMoney.isNotEmpty() &&
             passGoMoney.isNotEmpty() &&
-            creatorName.isNotEmpty()
+            creatorName.isNotEmpty() &&
+            isButtonEnabled
 
     LazyColumn(
         modifier = Modifier
@@ -317,29 +332,6 @@ fun GameContent(onGameCreated: (GameConfig, String) -> Unit) {
             }
         }
 
-        // Lista de jugadores conectados
-        /*item {
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(15.dp), // Espacio entre los elementos dentro del item
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(text = "Jugadores Conectados", fontWeight = FontWeight.Bold)
-                FlowRow(
-                    verticalArrangement = Arrangement.Center, // Centrar elementos verticalmente
-                    horizontalArrangement = Arrangement.spacedBy(15.dp), // Espacio horizontal entre filas
-                    maxItemsInEachRow = 3 // Mostrar 3 botones por fila
-                ) {
-                    playersConnected.forEach { player ->
-                        Text(
-                            modifier = Modifier.padding(5.dp),
-                            text = player
-                        )
-                    }
-                }
-            }
-        }*/
-
         // Botón para crear partida
         item {
             Button(
@@ -355,7 +347,7 @@ fun GameContent(onGameCreated: (GameConfig, String) -> Unit) {
                         onGameCreated(gameConfig, creatorName) // Configuración de la partida y el nombre del creador
                     }
                 },
-                enabled = true,
+                enabled = buttonEnabled,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(45.dp),
@@ -414,18 +406,7 @@ fun GameContentPreview() {
         onGameCreated = { gameConfig, creatorName ->
             // Acción simulada al crear la partida
             println("Game created with config: $gameConfig and creator: $creatorName")
-        }
+        },
+        isButtonEnabled = false
     )
 }
-
-/*
-// Preview para ver el diseño en Compose Preview
-fun GameContentPreview() {
-    GameContent(
-        onGameCreated = { gameConfig ->
-            // Aquí puedes realizar acciones como navegar a la pantalla de juego o iniciar la partida
-            println("Partida creada con la siguiente configuración: $gameConfig")
-        },
-        onBack = { /* Acción al volver */ }
-    )
-}*/
