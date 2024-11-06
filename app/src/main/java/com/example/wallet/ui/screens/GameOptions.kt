@@ -58,7 +58,7 @@ fun GameOptions(modifier: Modifier = Modifier, navController: NavController) {
     ) {
         // Aquí pasamos un valor a `onGameCreated` y `onBack`
         GameContent(
-            onGameCreated = onGameCreated@{ config, creatorName ->
+            onGameCreated = onGameCreated@ { config, creatorName ->
                 if (isGameCreated) return@onGameCreated
                 isButtonEnabled = false
                 isGameCreated = true
@@ -338,25 +338,33 @@ fun GameContent(onGameCreated: (GameConfig, String) -> Unit, isButtonEnabled: Bo
                 onClick = {
                     // Solo ejecuta la creación de partida si todas las condiciones están cumplidas
                     if (buttonEnabled) {
-                        val gameConfig = GameConfig(
-                            numPlayers = numPlayers,
-                            initialMoney = initialMoney.toInt(),
-                            passGoMoney = passGoMoney.toInt(),
-                            isBankAutomatic = isBankAutomatic
-                        )
-                        onGameCreated(gameConfig, creatorName) // Configuración de la partida y el nombre del creador
+                        try {
+                            val gameConfig = GameConfig(
+                                numPlayers = numPlayers,
+                                initialMoney = initialMoney.toInt(),
+                                passGoMoney = passGoMoney.toInt(),
+                                isBankAutomatic = isBankAutomatic
+                            )
+                            onGameCreated(gameConfig, creatorName) // Configuración de la partida y el nombre del creador
+                        } catch (e: Exception) {
+                            println("Error al crear el juego: ${e.message}")
+                        }
                     }
                 },
                 enabled = isButtonEnabled,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(45.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = if (isButtonEnabled) RoyalBlue else Color.Gray)
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = RoyalBlue,
+                    disabledContainerColor = PickledBluewood
+                )
             ) {
                 Text(
                     text = "Create Game",
                     textAlign = TextAlign.Center,
-                    fontSize = 17.sp
+                    fontSize = 17.sp,
+                    color = Color.White
                 )
             }
         }
