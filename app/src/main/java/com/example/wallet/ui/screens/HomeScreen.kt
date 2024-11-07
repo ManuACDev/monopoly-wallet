@@ -379,10 +379,6 @@ fun GamesList(navController: NavController, authService: AuthService, firestoreS
         }
     }
 
-    if (userGames.isEmpty()) {
-        Text("No games found", modifier = Modifier.padding(16.dp))
-    }
-
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -408,6 +404,19 @@ fun GamesList(navController: NavController, authService: AuthService, firestoreS
                 style = MaterialTheme.typography.bodyLarge,
                 color = CadetBlue
             )
+
+            if (userGames.isEmpty()) {
+                Spacer(modifier = Modifier.height(20.dp))
+
+                Text(
+                    text = "No games found",
+                    textAlign = TextAlign.Center,
+                    fontSize = 15.sp,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = AthensGray,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
