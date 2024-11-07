@@ -1,5 +1,7 @@
 package com.example.wallet.ui.screens
 
+import android.os.Handler
+import android.os.Looper
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -33,6 +35,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.wallet.R
 import com.example.wallet.services.AuthService
 import com.example.wallet.services.FirestoreService
+import com.example.wallet.services.InteractionService
 import com.example.wallet.ui.theme.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -57,6 +60,8 @@ fun HomeScreen(modifier: Modifier = Modifier, navController: NavController) {
 
 @Composable
 fun CustomScreen(navController: NavController) {
+    val interactionService = InteractionService(LocalContext.current)
+
     Column(
         modifier = Modifier
             .padding(8.dp),
@@ -116,11 +121,15 @@ fun CustomScreen(navController: NavController) {
         // Botón de "Start Game" centrado
         Button(
             onClick = {
-                try {
-                    navController.navigate("game_options")
-                } catch (e: Exception) {
-                    println("Error al navegar: ${e.message}")
-                }
+                interactionService.showToast("Charging...", Toast.LENGTH_SHORT)
+                Handler(Looper.getMainLooper()).postDelayed({
+                    try {
+                        navController.navigate("game_options")
+                    } catch (e: Exception) {
+                        println("Error al navegar: ${e.message}")
+                        interactionService.showToast("Error at navigating", Toast.LENGTH_SHORT)
+                    }
+                }, 1000L)
             },
             modifier = Modifier
                 .fillMaxWidth()
