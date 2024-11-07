@@ -1,6 +1,9 @@
 package com.example.wallet.ui.screens
 
 import android.annotation.SuppressLint
+import android.os.Handler
+import android.os.Looper
+import android.widget.Toast
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.*
@@ -30,6 +33,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -39,6 +43,7 @@ import androidx.navigation.NavController
 import com.example.wallet.models.GameConfig
 import com.example.wallet.services.AuthService
 import com.example.wallet.services.FirestoreService
+import com.example.wallet.services.InteractionService
 import com.example.wallet.ui.theme.*
 import kotlinx.coroutines.launch
 import java.util.UUID
@@ -48,6 +53,7 @@ fun GameOptions(modifier: Modifier = Modifier, navController: NavController) {
     val coroutineScope = rememberCoroutineScope()
     var isButtonEnabled by remember { mutableStateOf(true) }
     var isGameCreated by remember { mutableStateOf(false) }
+    val interactionService = InteractionService(LocalContext.current)
 
     Column(
         modifier = modifier
@@ -60,30 +66,35 @@ fun GameOptions(modifier: Modifier = Modifier, navController: NavController) {
         GameContent(
             onGameCreated = onGameCreated@ { config, creatorName ->
                 if (isGameCreated) return@onGameCreated
+                interactionService.showToast("Creating the game...", Toast.LENGTH_LONG)
                 isButtonEnabled = false
                 isGameCreated = true
 
-                coroutineScope.launch {
-                    try {
-                        val gameId = createGameInFirestore(config, creatorName) // Llamar a la función suspend
-                        println("Partida creada con la configuración: $config y creador: $creatorName")
+                Handler(Looper.getMainLooper()).postDelayed({
+                    coroutineScope.launch {
+                        try {
+                            val gameId = createGameInFirestore(config, creatorName) // Llamar a la función suspend
+                            println("Partida creada con la configuración: $config y creador: $creatorName")
 
-                        if (gameId != null) {
-                            // Navegar a GameScreen pasando solo el gameId
-                            navController.navigate("gameScreen/$gameId") {
-                                popUpTo("game_options") { inclusive = true } // Elimina la pantalla anterior
+                            if (gameId != null) {
+                                // Navegar a GameScreen pasando solo el gameId
+                                navController.navigate("gameScreen/$gameId") {
+                                    popUpTo("game_options") { inclusive = true } // Elimina la pantalla anterior
+                                }
+                            } else {
+                                println("Error: el ID de la partida es inválido.")
+                                interactionService.showToast("Error creating the game.", Toast.LENGTH_SHORT)
+                                isButtonEnabled = true
+                                isGameCreated = false
                             }
-                        } else {
-                            println("Error: el ID de la partida es inválido.")
+                        } catch (e: Exception) {
+                            println("Error al crear la partida: ${e.message}")
+                            interactionService.showToast("Error creating the game", Toast.LENGTH_SHORT)
                             isButtonEnabled = true
                             isGameCreated = false
                         }
-                    } catch (e: Exception) {
-                        println("Error al crear la partida: ${e.message}")
-                    } finally {
-                        isButtonEnabled = true
                     }
-                }
+                }, 1000L)
             },
             isButtonEnabled = isButtonEnabled
         )
