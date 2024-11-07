@@ -351,6 +351,7 @@ fun GameContent(onGameCreated: (GameConfig, String) -> Unit, isButtonEnabled: Bo
                     if (buttonEnabled) {
                         try {
                             val gameConfig = GameConfig(
+                                gameId = "docId",
                                 numPlayers = numPlayers,
                                 initialMoney = initialMoney.toInt(),
                                 passGoMoney = passGoMoney.toInt(),
@@ -391,6 +392,7 @@ suspend fun createGameInFirestore(config: GameConfig, creatorName: String): Stri
 
     // Crear el mapa de datos para la partida
     val data = mapOf(
+        "gameId" to gameId,
         "numPlayers" to config.numPlayers,
         "initialMoney" to config.initialMoney,
         "passGoMoney" to config.passGoMoney,
