@@ -88,7 +88,7 @@ fun AuthScreen(modifier: Modifier = Modifier, onLoginSuccess: () -> Unit, authSe
         ) {
             when (selectedTab) {
                 AuthTab.Login -> LoginTab(onLoginSuccess = onLoginSuccess, authService = authService, interactionService = interactionService)
-                AuthTab.Register -> RegisterTab(onRegisterSuccess = onLoginSuccess, authService = authService)
+                AuthTab.Register -> RegisterTab(onRegisterSuccess = onLoginSuccess, authService = authService, interactionService = interactionService)
             }
         }
     }
@@ -217,11 +217,11 @@ fun LoginTab(onLoginSuccess: () -> Unit, authService: AuthService, interactionSe
 }
 
 @Composable
-fun RegisterTab(onRegisterSuccess: () -> Unit, authService: AuthService) {
+fun RegisterTab(onRegisterSuccess: () -> Unit, authService: AuthService, interactionService: InteractionService) {
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
+    var isButtonEnabled by remember { mutableStateOf(true) }
 
     Column(
         modifier = Modifier
@@ -318,31 +318,52 @@ fun RegisterTab(onRegisterSuccess: () -> Unit, authService: AuthService) {
 
         Button(
             onClick = {
-                // Intentar registrarse
-                CoroutineScope(Dispatchers.IO).launch {
-                    val result = authService.register(name, email, password)
-                    withContext(Dispatchers.Main) {
-                        result.onSuccess {
-                            onRegisterSuccess()
-                        }.onFailure {
-                            errorMessage = it.message
+                if (name.isNotEmpty() && email.isNotEmpty() && password.isNotEmpty()) {
+                    interactionService.showToast("Registering in...", Toast.LENGTH_SHORT)
+                    isButtonEnabled = false
+
+                    Handler(Looper.getMainLooper()).postDelayed({
+                        // Intentar registrarse
+                        CoroutineScope(Dispatchers.IO).launch {
+                            try {
+                                val result = authService.register(name, email, password)
+                                withContext(Dispatchers.Main) {
+                                    result.onSuccess {
+                                        interactionService.showToast("Register successful!", Toast.LENGTH_SHORT)
+                                        onRegisterSuccess()
+                                    }.onFailure {
+                                        interactionService.showToast(it.message ?: "Register failed.", Toast.LENGTH_SHORT)
+                                        isButtonEnabled = true
+                                    }
+                                }
+                            } catch (e: Exception) {
+                                println("Error: ${e.message}")
+                                interactionService.showToast(e.message ?: "Error during register.", Toast.LENGTH_SHORT)
+                                isButtonEnabled = true
+                            }
                         }
-                    }
+                    }, 1000L)
+                } else {
+                    println("Error: Todos los campos son obligatorios.")
+                    interactionService.showToast("Please enter name, email and password.", Toast.LENGTH_SHORT)
                 }
             },
+            enabled = isButtonEnabled,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(45.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = RoyalBlue)
+            colors = ButtonDefaults.buttonColors(
+                containerColor = RoyalBlue,
+                disabledContainerColor = PickledBluewood
+            )
         ) {
             Text(
                 text = "Register",
                 textAlign = TextAlign.Center,
-                fontSize = 17.sp
+                fontSize = 17.sp,
+                color = Color.White
             )
         }
-
-        errorMessage?.let { Text(it, color = Color.Red) }
     }
 }
 
