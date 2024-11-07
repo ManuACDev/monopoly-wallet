@@ -12,6 +12,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -32,6 +33,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.wallet.R
+import com.example.wallet.models.GameConfig
 import com.example.wallet.services.AuthService
 import com.example.wallet.services.FirestoreService
 import com.example.wallet.services.InteractionService
@@ -43,6 +45,8 @@ import kotlinx.coroutines.withContext
 @Composable
 fun HomeScreen(modifier: Modifier = Modifier, navController: NavController) {
     val scrollState = rememberScrollState()
+    val authService = AuthService()
+    val firestoreService = FirestoreService()
 
     // Crear la pantalla con un layout vertical
     Column(modifier = modifier
@@ -54,6 +58,7 @@ fun HomeScreen(modifier: Modifier = Modifier, navController: NavController) {
     ) {
         CustomScreen(navController = navController)
         JoinScreen(navController = navController)
+        GamesList(navController = navController, authService = authService, firestoreService = firestoreService)
     }
 }
 
@@ -361,6 +366,90 @@ fun JoinGameDialog(onDismiss: () -> Unit, onJoinGame: (String, String) -> Unit, 
             }
         }
     )
+}
+
+@Composable
+fun GamesList(navController: NavController, authService: AuthService, firestoreService: FirestoreService) {
+    val userId = authService.currentUser?.uid
+    var userGames by remember { mutableStateOf<List<GameConfig>>(emptyList()) }
+
+    LaunchedEffect(userId) {
+        if (userId != null) {
+            userGames = firestoreService.getPlayerGamesConfig(userId)
+        }
+    }
+
+    if (userGames.isEmpty()) {
+        Text("No games found", modifier = Modifier.padding(16.dp))
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Column(
+            modifier = Modifier.fillMaxWidth(), // Ocupa tdo el ancho
+            horizontalAlignment = Alignment.Start // Alinea a la izquierda
+        ) {
+            Text(
+                text = "Your Games",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                color = TwilightBlue
+            )
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Text(
+                text = "Join a game again",
+                fontSize = 18.sp,
+                style = MaterialTheme.typography.bodyLarge,
+                color = CadetBlue
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Column para mostrar la lista de juegos
+        Column(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            userGames.forEach { game ->
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp)
+                        .clickable {
+                            // Usamos el gameId para la navegación
+                            navController.navigate("gameScreen/${game.gameId}") {
+                                popUpTo("home") { inclusive = true }
+                            }
+                        },
+                    elevation = CardDefaults.cardElevation(4.dp)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalArrangement = Arrangement.SpaceBetween,
+                        horizontalAlignment = Alignment.Start
+                    ) {
+                        // Mostramos el GameId y algún detalle relevante de GameConfig
+                        Text(
+                            text = "Game ID: ${game.gameId}",
+                            fontWeight = FontWeight.Bold
+                        )
+
+                        Text(
+                            text = "Players: ${game.numPlayers}"
+                        )
+                    }
+                }
+            }
+        }
+    }
 }
 
 @Preview(showBackground = true)
