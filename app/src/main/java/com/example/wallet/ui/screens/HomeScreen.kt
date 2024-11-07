@@ -5,11 +5,14 @@ import android.os.Looper
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -429,31 +432,55 @@ fun GamesList(navController: NavController, authService: AuthService, firestoreS
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 8.dp)
+                        .padding(8.dp)
+                        .border(1.dp, color = PickledBluewood, shape = RoundedCornerShape(12.dp))
                         .clickable {
                             // Usamos el gameId para la navegación
                             navController.navigate("gameScreen/${game.gameId}") {
                                 popUpTo("home") { inclusive = true }
                             }
                         },
-                    elevation = CardDefaults.cardElevation(4.dp)
+                    colors = CardDefaults.cardColors(containerColor = Mirage),
+                    elevation = CardDefaults.cardElevation(4.dp),
+                    shape = RoundedCornerShape(12.dp),
                 ) {
                     Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
+                        modifier = Modifier.padding(16.dp),
                         verticalArrangement = Arrangement.SpaceBetween,
                         horizontalAlignment = Alignment.Start
                     ) {
                         // Mostramos el GameId y algún detalle relevante de GameConfig
                         Text(
-                            text = "Game ID: ${game.gameId}",
-                            fontWeight = FontWeight.Bold
+                            text = "Game Code: ${game.gameId}",
+                            fontSize = 18.sp,
+                            textAlign = TextAlign.Left,
+                            color = TwilightBlue,
+                            style = MaterialTheme.typography.titleMedium,
+                            modifier = Modifier.fillMaxWidth()
                         )
 
-                        Text(
-                            text = "Players: ${game.numPlayers}"
-                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Person,
+                                contentDescription = "Person Icon",
+                                tint = Nepal,
+                                modifier = Modifier.size(24.dp)
+                            )
+
+                            Text(
+                                text = "Players: ${game.numPlayers}",
+                                fontSize = 18.sp,
+                                textAlign = TextAlign.Left,
+                                color = TwilightBlue,
+                                style = MaterialTheme.typography.titleMedium,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
                     }
                 }
             }
