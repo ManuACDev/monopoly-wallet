@@ -2,6 +2,9 @@
 
 package com.example.wallet.ui.screens.actions
 
+import android.os.Handler
+import android.os.Looper
+import android.widget.Toast
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -45,6 +48,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -54,6 +58,7 @@ import com.example.wallet.models.Parking
 import com.example.wallet.models.Player
 import com.example.wallet.services.AuthService
 import com.example.wallet.services.FirestoreService
+import com.example.wallet.services.InteractionService
 import com.example.wallet.ui.theme.Mirage
 import com.example.wallet.ui.theme.Nepal
 import com.example.wallet.ui.theme.PickledBluewood
@@ -108,6 +113,7 @@ fun BankActions(gameId: String, uid: String) {
     var isTransferInProgress by remember { mutableStateOf(false) }
 
     val firestoreService = FirestoreService()
+    val interactionService = InteractionService(LocalContext.current)
     val coroutineScope = rememberCoroutineScope()
 
     // Recupera la configuración de la partida, jugadores y al usuario actual
@@ -445,37 +451,44 @@ fun BankActions(gameId: String, uid: String) {
                             selectedPlayer = player
                         }
                         if (selectedPlayer != null && amountToTransfer != null && amountToTransfer > 0) {
+                            interactionService.showToast("Transferring money...", Toast.LENGTH_SHORT)
                             isTransferInProgress = true
-                            coroutineScope.launch {
-                                try {
-                                    firestoreService.receiveMoney(
-                                        amount = amountToTransfer,
-                                        recipientPlayer = selectedPlayer!!,
-                                        gameId = gameId,
-                                        transferFrom = transferFrom
-                                    )
-                                    val message = "ha enviado $amount$ al jugador ${selectedPlayer?.name}"
-                                    val (name, type) = when (transferFrom) {
-                                        "Bank" -> "La Banca" to "acs_bank"
-                                        "Parking" -> "El Parking" to "acs_park"
-                                        else -> "La entidad" to "acs_bank"
+
+                            Handler(Looper.getMainLooper()).postDelayed({
+                                coroutineScope.launch {
+                                    try {
+                                        firestoreService.receiveMoney(
+                                            amount = amountToTransfer,
+                                            recipientPlayer = selectedPlayer!!,
+                                            gameId = gameId,
+                                            transferFrom = transferFrom
+                                        )
+                                        val message = "ha enviado $amount$ al jugador ${selectedPlayer?.name}"
+                                        val (name, type) = when (transferFrom) {
+                                            "Bank" -> "La Banca" to "acs_bank"
+                                            "Parking" -> "El Parking" to "acs_park"
+                                            else -> "La entidad" to "acs_bank"
+                                        }
+                                        firestoreService.sendChatMessage(
+                                            gameId = gameId,
+                                            playerName = name,
+                                            message = message,
+                                            type = type
+                                        )
+                                        interactionService.showToast("Transfer completed successfully.", Toast.LENGTH_SHORT)
+                                        amount = ""
+                                    } catch (e: Exception) {
+                                        println("Error: ${e.message}")
+                                        interactionService.showToast(e.message ?: "Error during transfer.", Toast.LENGTH_SHORT)
+                                    } finally {
+                                        isTransferInProgress = false
                                     }
-                                    firestoreService.sendChatMessage(
-                                        gameId = gameId,
-                                        playerName = name,
-                                        message = message,
-                                        type = type
-                                    )
-                                    amount = ""
-                                } catch (e: Exception) {
-                                    println("Error: ${e.message}")
-                                } finally {
-                                    isTransferInProgress = false
                                 }
-                            }
+                            }, 1000L)
                         } else {
                             // Manejar casos de error, como cuando amountToTransfer es nulo o menor o igual a cero
                             println("Error: Ingrese un monto válido para transferir.")
+                            interactionService.showToast("Please enter a valid amount to transfer.", Toast.LENGTH_SHORT)
                         }
                     },
                     enabled = !isTransferInProgress,
