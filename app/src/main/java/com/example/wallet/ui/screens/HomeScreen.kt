@@ -12,7 +12,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -149,19 +148,11 @@ fun CustomScreen(navController: NavController) {
 fun JoinScreen(navController: NavController) {
     val coroutineScope = rememberCoroutineScope()
     var showJoinDialog by remember { mutableStateOf(false) }
-    var showToastMessage by remember { mutableStateOf<String?>(null) }
-    val context = LocalContext.current // Obtener el contexto fuera de composable
     val firestoreService = FirestoreService()
     val authService = AuthService()
+    val interactionService = InteractionService(LocalContext.current)
     var isButtonEnabled by remember { mutableStateOf(true) }
     var isGameJoined by remember { mutableStateOf(false) }
-
-    showToastMessage?.let { message ->
-        LaunchedEffect(message) {
-            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-            showToastMessage = null // Resetear el mensaje después de mostrar el Toast
-        }
-    }
 
     Box(
         modifier = Modifier
@@ -212,32 +203,35 @@ fun JoinScreen(navController: NavController) {
                         onDismiss = { showJoinDialog = false },
                         onJoinGame = onJoinGame@ { gameId, playerName ->
                             if (isGameJoined) return@onJoinGame
+                            interactionService.showToast("Joining the game...", Toast.LENGTH_LONG)
                             isButtonEnabled = false
                             isGameJoined = true
 
-                            coroutineScope.launch {
-                                try {
-                                    val userId = authService.currentUser?.uid
-                                    if (userId != null) {
-                                        firestoreService.joinGame(gameId, playerName, userId, false, false) // Usar playerName
-                                        withContext(Dispatchers.Main) {
-                                            navController.navigate("gameScreen/$gameId") { // Navegar si es exitoso
-                                                popUpTo("home") { inclusive = true } // Elimina HomeScreen de la pila
+                            Handler(Looper.getMainLooper()).postDelayed({
+                                coroutineScope.launch {
+                                    try {
+                                        val userId = authService.currentUser?.uid
+                                        if (userId != null) {
+                                            firestoreService.joinGame(gameId, playerName, userId, false, false) // Usar playerName
+                                            withContext(Dispatchers.Main) {
+                                                navController.navigate("gameScreen/$gameId") { // Navegar si es exitoso
+                                                    popUpTo("home") { inclusive = true } // Elimina HomeScreen de la pila
+                                                }
                                             }
+                                        } else {
+                                            println("Error: error al unirse a la partida.")
+                                            interactionService.showToast("Error joining the game.", Toast.LENGTH_SHORT)
+                                            isButtonEnabled = true
+                                            isGameJoined = false
                                         }
-                                    } else {
-                                        println("Error: error al unirse a la partida.")
+                                    } catch (e: Exception) {
+                                        println("Error al unirse a la partida: ${e.message}")
+                                        interactionService.showToast(e.message ?: "Error joining the game", Toast.LENGTH_SHORT)
                                         isButtonEnabled = true
                                         isGameJoined = false
                                     }
-                                } catch (e: Exception) {
-                                    withContext(Dispatchers.Main) {
-                                        showToastMessage = e.message ?: "Error al unirse a la partida"
-                                    }
-                                } finally {
-                                    isButtonEnabled = true
                                 }
-                            }
+                            }, 1000L)
                         },
                         isButtonEnabled = isButtonEnabled
                     )
