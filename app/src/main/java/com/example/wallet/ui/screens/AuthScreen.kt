@@ -1,3 +1,6 @@
+import android.os.Handler
+import android.os.Looper
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -20,10 +23,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import com.example.wallet.services.AuthService
+import com.example.wallet.services.InteractionService
 import com.example.wallet.ui.theme.Nepal
 import com.example.wallet.ui.theme.PickledBluewood
 import com.example.wallet.ui.theme.RoyalBlue
@@ -35,6 +40,7 @@ import kotlinx.coroutines.withContext
 @Composable
 fun AuthScreen(modifier: Modifier = Modifier, onLoginSuccess: () -> Unit, authService: AuthService) {
     var selectedTab by remember { mutableStateOf(AuthTab.Login) }
+    val interactionService = InteractionService(LocalContext.current)
 
     Column(
         modifier = modifier
@@ -81,7 +87,7 @@ fun AuthScreen(modifier: Modifier = Modifier, onLoginSuccess: () -> Unit, authSe
                 .heightIn(min = 400.dp)
         ) {
             when (selectedTab) {
-                AuthTab.Login -> LoginTab(onLoginSuccess = onLoginSuccess, authService = authService)
+                AuthTab.Login -> LoginTab(onLoginSuccess = onLoginSuccess, authService = authService, interactionService = interactionService)
                 AuthTab.Register -> RegisterTab(onRegisterSuccess = onLoginSuccess, authService = authService)
             }
         }
@@ -89,10 +95,10 @@ fun AuthScreen(modifier: Modifier = Modifier, onLoginSuccess: () -> Unit, authSe
 }
 
 @Composable
-fun LoginTab(onLoginSuccess: () -> Unit, authService: AuthService) {
+fun LoginTab(onLoginSuccess: () -> Unit, authService: AuthService, interactionService: InteractionService) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
+    var isButtonEnabled by remember { mutableStateOf(true) }
 
     Column(
         modifier = Modifier
@@ -161,31 +167,52 @@ fun LoginTab(onLoginSuccess: () -> Unit, authService: AuthService) {
 
         Button(
             onClick = {
-                // Intentar iniciar sesión
-                CoroutineScope(Dispatchers.IO).launch {
-                    val result = authService.login(email, password)
-                    withContext(Dispatchers.Main) {
-                        result.onSuccess {
-                            onLoginSuccess()
-                        }.onFailure {
-                            errorMessage = it.message
+                if (email.isNotEmpty() && password.isNotEmpty()) {
+                    interactionService.showToast("Logging in...", Toast.LENGTH_SHORT)
+                    isButtonEnabled = false
+
+                    Handler(Looper.getMainLooper()).postDelayed({
+                        // Intentar iniciar sesión
+                        CoroutineScope(Dispatchers.IO).launch {
+                            try {
+                                val result = authService.login(email, password)
+                                withContext(Dispatchers.Main) {
+                                    result.onSuccess {
+                                        interactionService.showToast("Login successful!", Toast.LENGTH_SHORT)
+                                        onLoginSuccess()
+                                    }.onFailure {
+                                        interactionService.showToast(it.message ?: "Login failed.", Toast.LENGTH_SHORT)
+                                        isButtonEnabled = true
+                                    }
+                                }
+                            } catch (e: Exception) {
+                                println("Error: ${e.message}")
+                                interactionService.showToast(e.message ?: "Error during login.", Toast.LENGTH_SHORT)
+                                isButtonEnabled = true
+                            }
                         }
-                    }
+                    }, 1000L)
+                } else {
+                    println("Error: Todos los campos son obligatorios.")
+                    interactionService.showToast("Please enter email and password.", Toast.LENGTH_SHORT)
                 }
             },
+            enabled = isButtonEnabled,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(45.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = RoyalBlue)
+            colors = ButtonDefaults.buttonColors(
+                containerColor = RoyalBlue,
+                disabledContainerColor = PickledBluewood
+            )
         ) {
             Text(
                 text = "Login",
                 textAlign = TextAlign.Center,
-                fontSize = 17.sp
+                fontSize = 17.sp,
+                color = Color.White
             )
         }
-
-        errorMessage?.let { Text(it, color = Color.Red) }
     }
 }
 
