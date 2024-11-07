@@ -228,6 +228,39 @@ class FirestoreService {
             }
     }
 
+    // Recuperar todas las partidas de un jugador
+    suspend fun getPlayerGamesConfig(uid: String): List<GameConfig> {
+        return try {
+            val gamesRef = firestore.collection("Games") // Accedemos a la colección de "Games"
+            val querySnapshot = gamesRef.get().await() // Recuperamos todos los documentos de "Games"
+
+            // Lista para almacenar las configuraciones de las partidas del jugador
+            val playerGameConfigs = mutableListOf<GameConfig>()
+
+            // Iteramos sobre cada partida
+            for (gameDocument in querySnapshot.documents) {
+                val playersRef = gameDocument.reference.collection("Players") // Accedemos a la subcolección "Players" de cada "gameId"
+
+                // Buscamos en "Players" si existe un jugador con el UID dado
+                val playerSnapshot = playersRef
+                    .whereEqualTo("Uid", uid)
+                    .get()
+                    .await()
+
+                // Si encontramos al jugador en esta partida, recuperamos la configuración de ese juego
+                if (!playerSnapshot.isEmpty) {
+                    val gameConfig = getGameConfig(gameDocument.id) // Usamos el método que ya tienes para obtener la configuración del juego
+                    gameConfig?.let { playerGameConfigs.add(it) }
+                }
+            }
+
+            playerGameConfigs
+        } catch (e: Exception) {
+            println("Error al recuperar las configuraciones de las partidas del jugador: ${e.message}")
+            emptyList() // Devolvemos una lista vacía en caso de error
+        }
+    }
+
     // Actualizar jugador
     suspend fun updatePlayer(uid: String, path: String, field: String) {
         try {
