@@ -37,6 +37,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.wallet.R
 import com.example.wallet.models.GameConfig
+import com.example.wallet.models.Player
 import com.example.wallet.services.AuthService
 import com.example.wallet.services.FirestoreService
 import com.example.wallet.services.InteractionService
@@ -374,7 +375,7 @@ fun JoinGameDialog(onDismiss: () -> Unit, onJoinGame: (String, String) -> Unit, 
 @Composable
 fun GamesList(navController: NavController, authService: AuthService, firestoreService: FirestoreService) {
     val userId = authService.currentUser?.uid
-    var userGames by remember { mutableStateOf<List<GameConfig>>(emptyList()) }
+    var userGames by remember { mutableStateOf<List<Pair<GameConfig, Player?>>>(emptyList()) }
 
     LaunchedEffect(userId) {
         if (userId != null) {
@@ -428,7 +429,7 @@ fun GamesList(navController: NavController, authService: AuthService, firestoreS
         Column(
             modifier = Modifier.fillMaxWidth()
         ) {
-            userGames.forEach { game ->
+            userGames.forEach { (game, player) ->
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -446,40 +447,91 @@ fun GamesList(navController: NavController, authService: AuthService, firestoreS
                 ) {
                     Column(
                         modifier = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.SpaceBetween,
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
                         horizontalAlignment = Alignment.Start
                     ) {
-                        // Mostramos el GameId y algún detalle relevante de GameConfig
-                        Text(
-                            text = "Game Code: ${game.gameId}",
-                            fontSize = 18.sp,
-                            textAlign = TextAlign.Left,
-                            color = TwilightBlue,
-                            style = MaterialTheme.typography.titleMedium,
-                            modifier = Modifier.fillMaxWidth()
-                        )
-
-                        Spacer(modifier = Modifier.height(8.dp))
-
+                        // Sección superior con Game Code y número de jugadores
                         Row(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.Person,
-                                contentDescription = "Person Icon",
-                                tint = Nepal,
-                                modifier = Modifier.size(24.dp)
+                            Text(
+                                text = "Game Code: ${game.gameId}",
+                                fontSize = 20.sp,
+                                color = TwilightBlue,
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.Bold
                             )
 
-                            Text(
-                                text = "Players: ${game.numPlayers}",
-                                fontSize = 18.sp,
-                                textAlign = TextAlign.Left,
-                                color = TwilightBlue,
-                                style = MaterialTheme.typography.titleMedium,
-                                modifier = Modifier.fillMaxWidth()
-                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Person,
+                                    contentDescription = "Person Icon",
+                                    tint = Nepal,
+                                    modifier = Modifier.size(20.dp)
+                                )
+
+                                Spacer(modifier = Modifier.width(4.dp))
+
+                                Text(
+                                    text = "${game.numPlayers} players",
+                                    fontSize = 16.sp,
+                                    color = TwilightBlue,
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
+                            }
+                        }
+
+                        HorizontalDivider(thickness = 2.dp, color = PickledBluewood)
+
+                        // Sección de información del jugador
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Column(
+                                verticalArrangement = Arrangement.spacedBy(4.dp),
+                                horizontalAlignment = Alignment.Start
+                            ) {
+                                Text(
+                                    text = "Player Name:",
+                                    fontSize = 14.sp,
+                                    color = CadetBlue,
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+
+                                Text(
+                                    text = player?.name ?: "Unknown",
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = AthensGray,
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
+                            }
+
+                            Column(
+                                verticalArrangement = Arrangement.spacedBy(4.dp),
+                                horizontalAlignment = Alignment.End
+                            ) {
+                                Text(
+                                    text = "Money:",
+                                    fontSize = 14.sp,
+                                    color = CadetBlue,
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+
+                                Text(
+                                    text = "$${player?.money ?: 0}",
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = AthensGray,
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
+                            }
                         }
                     }
                 }
