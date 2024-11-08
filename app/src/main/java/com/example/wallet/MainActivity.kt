@@ -82,7 +82,7 @@ fun MyApp(authService: AuthService, firestoreService: FirestoreService) {
                         "live_chat/{gameId}" -> "Live Chat"
                         "send_money/{gameId}" -> "Send Money"
                         "access_bank/{gameId}" -> "Access Bank"
-                        else -> "Monopoly"
+                        else -> "PolyBank"
                     },
                     showBackButton = showBackButton,
                     onBack = {
