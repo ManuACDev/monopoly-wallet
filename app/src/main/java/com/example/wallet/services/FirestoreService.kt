@@ -229,13 +229,13 @@ class FirestoreService {
     }
 
     // Recuperar todas las partidas de un jugador
-    suspend fun getPlayerGamesConfig(uid: String): List<GameConfig> {
+    suspend fun getPlayerGamesConfig(uid: String): List<Pair<GameConfig, Player?>> {
         return try {
             val gamesRef = firestore.collection("Games") // Accedemos a la colección de "Games"
             val querySnapshot = gamesRef.get().await() // Recuperamos todos los documentos de "Games"
 
             // Lista para almacenar las configuraciones de las partidas del jugador
-            val playerGameConfigs = mutableListOf<GameConfig>()
+            val playerGameConfigs = mutableListOf<Pair<GameConfig, Player?>>()
 
             // Iteramos sobre cada partida
             for (gameDocument in querySnapshot.documents) {
@@ -249,8 +249,23 @@ class FirestoreService {
 
                 // Si encontramos al jugador en esta partida, recuperamos la configuración de ese juego
                 if (!playerSnapshot.isEmpty) {
-                    val gameConfig = getGameConfig(gameDocument.id) // Usamos el método que ya tienes para obtener la configuración del juego
-                    gameConfig?.let { playerGameConfigs.add(it) }
+                    // Recuperar la configuración del juego
+                    val gameConfig = getGameConfig(gameDocument.id)
+                    val playerDocument = playerSnapshot.documents.firstOrNull()
+
+                    val player = playerDocument?.let { document ->
+                        Player(
+                            name = document.getString("Name") ?: "Invitado",
+                            money = document.getLong("Money") ?: 0L,
+                            uid = document.getString("Uid") ?: uid,
+                            admin = document.getBoolean("Admin") ?: false,
+                            banker = document.getBoolean("Banker") ?: false
+                        )
+                    }
+
+                    if (gameConfig != null) {
+                        playerGameConfigs.add(gameConfig to player)
+                    }
                 }
             }
 
