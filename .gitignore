@@ -1,6 +1,6 @@
 # Ignorar archivos y carpetas generados por Android Studio
 .gradle/
-.idea/                # Ignora toda la carpeta .idea
+/.idea/
 *.iml
 build/
 captures/
