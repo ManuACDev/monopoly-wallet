@@ -41,6 +41,7 @@ import com.example.wallet.models.Player
 import com.example.wallet.services.AuthService
 import com.example.wallet.services.FirestoreService
 import com.example.wallet.services.InteractionService
+import com.example.wallet.ui.components.NativeAdComponent
 import com.example.wallet.ui.theme.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -62,6 +63,11 @@ fun HomeScreen(modifier: Modifier = Modifier, navController: NavController) {
     ) {
         CustomScreen(navController = navController)
         JoinScreen(navController = navController)
+        NativeAdComponent(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp) // Padding para separar el anuncio de los otros elementos
+        )
         GamesList(navController = navController, authService = authService, firestoreService = firestoreService)
     }
 }
