@@ -69,6 +69,9 @@ dependencies {
     //implementation("io.coil-kt:coil-compose:2.1.0")
     implementation("androidx.compose.material:material-icons-extended:1.7.4")
 
+    // Google Ads
+    implementation("com.google.android.gms:play-services-ads:23.5.0")
+
 
     // Firebase
     implementation(platform("com.google.firebase:firebase-bom:33.5.1"))

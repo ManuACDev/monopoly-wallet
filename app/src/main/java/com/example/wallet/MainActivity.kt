@@ -32,6 +32,10 @@ import com.example.wallet.ui.screens.actions.RollDiceScreen
 import com.example.wallet.ui.screens.actions.SendMoneyScreen
 import com.example.wallet.ui.theme.MonopolyWalletTheme
 import com.example.wallet.ui.theme.Vulcan
+import com.google.android.gms.ads.MobileAds
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     private val authService = AuthService()
@@ -39,6 +43,16 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        // Inicializar el SDK de Google Mobile Ads
+        val backgroundScope = CoroutineScope(Dispatchers.IO)
+        backgroundScope.launch {
+            MobileAds.initialize(this@MainActivity) {
+                // Callback opcional: puedes agregar logs o acciones adicionales aquí si es necesario.
+                println("SDK de Google Mobile Ads inicializado correctamente")
+            }
+        }
+
         setContent {
             MyApp(authService = authService, firestoreService = firestoreService)
         }

@@ -12,6 +12,11 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MonopolyWallet"
         tools:targetApi="31">
+
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-4224838935226247~6646293308"/>
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
