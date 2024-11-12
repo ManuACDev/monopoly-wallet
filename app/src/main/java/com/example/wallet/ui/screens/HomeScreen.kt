@@ -69,6 +69,11 @@ fun HomeScreen(modifier: Modifier = Modifier, navController: NavController) {
                 .padding(8.dp) // Padding para separar el anuncio de los otros elementos
         )
         GamesList(navController = navController, authService = authService, firestoreService = firestoreService)
+        NativeAdComponent(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp) // Padding para separar el anuncio de los otros elementos
+        )
     }
 }
 
