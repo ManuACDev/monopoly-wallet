@@ -1,5 +1,6 @@
 package com.example.wallet.ui.components
 
+import android.content.res.Resources
 import android.util.Log
 import android.widget.ImageView
 import android.widget.TextView
@@ -14,6 +15,8 @@ import android.graphics.Color
 import android.widget.LinearLayout
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdLoader
@@ -60,6 +63,7 @@ fun NativeAdComponent(modifier: Modifier = Modifier, adUnitId: String) {
                     setNativeAd(ad)
                     val adContainer = LinearLayout(context).apply {
                         orientation = LinearLayout.VERTICAL
+                        gravity = android.view.Gravity.CENTER
                     }
 
                     // Configurar los elementos del anuncio dentro de NativeAdView
@@ -75,6 +79,12 @@ fun NativeAdComponent(modifier: Modifier = Modifier, adUnitId: String) {
                     }
                     val iconView = ImageView(context).apply {
                         setImageDrawable(ad.icon?.drawable)
+                        layoutParams = LinearLayout.LayoutParams(
+                            150.dp.toPx().toInt(), // Ancho del icono
+                            150.dp.toPx().toInt() // Alto del icono
+                        ).apply {
+                            topMargin = 14.dp.toPx().toInt() // Padding superior para la imagen
+                        }
                     }
 
                     // Añadir las vistas al contenedor
@@ -93,4 +103,8 @@ fun NativeAdComponent(modifier: Modifier = Modifier, adUnitId: String) {
             }
         )
     }
+}
+
+fun Dp.toPx(): Float {
+    return this.value * Resources.getSystem().displayMetrics.density
 }
