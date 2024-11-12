@@ -24,14 +24,14 @@ import com.google.android.gms.ads.nativead.NativeAdView
 
 
 @Composable
-fun NativeAdComponent(modifier: Modifier = Modifier) {
+fun NativeAdComponent(modifier: Modifier = Modifier, adUnitId: String) {
     val context = LocalContext.current
     var nativeAd by remember { mutableStateOf<NativeAd?>(null) }
     var isAdLoading by remember { mutableStateOf(true) }
 
-    // Cargar el anuncio nativo al inicio ca-app-pub-4224838935226247/2092776528
+    // Cargar el anuncio nativo al inicio Prueba: "ca-app-pub-3940256099942544/2247696110"
     LaunchedEffect(Unit) {
-        val adLoader = AdLoader.Builder(context, "ca-app-pub-3940256099942544/2247696110")
+        val adLoader = AdLoader.Builder(context, adUnitId)
             .forNativeAd { ad : NativeAd ->
                 nativeAd = ad
                 isAdLoading = false

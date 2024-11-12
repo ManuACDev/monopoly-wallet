@@ -66,13 +66,15 @@ fun HomeScreen(modifier: Modifier = Modifier, navController: NavController) {
         NativeAdComponent(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(8.dp) // Padding para separar el anuncio de los otros elementos
+                .padding(8.dp), // Padding para separar el anuncio de los otros elementos
+            adUnitId = "ca-app-pub-4224838935226247/2092776528"
         )
         GamesList(navController = navController, authService = authService, firestoreService = firestoreService)
         NativeAdComponent(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(8.dp) // Padding para separar el anuncio de los otros elementos
+                .padding(8.dp), // Padding para separar el anuncio de los otros elementos
+            adUnitId = "ca-app-pub-4224838935226247/2092776528"
         )
     }
 }
