@@ -49,6 +49,7 @@ import com.example.wallet.models.GameConfig
 import com.example.wallet.models.Player
 import com.example.wallet.services.AuthService
 import com.example.wallet.services.FirestoreService
+import com.example.wallet.ui.components.NativeAdComponent
 import com.example.wallet.ui.theme.Mirage
 import com.example.wallet.ui.theme.Nepal
 import com.example.wallet.ui.theme.TwilightBlue
@@ -84,6 +85,12 @@ fun GameScreen(modifier: Modifier = Modifier, gameId: String, navController: Nav
 
         GameDetails(gameId = gameId)
         playerName?.let { ActionsGame(navController = navController, gameId = gameId, playerName = it) }
+        NativeAdComponent(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp), // Padding para separar el anuncio de los otros elementos
+            adUnitId = "ca-app-pub-4224838935226247/8316539566"
+        )
     }
 }
 
@@ -239,7 +246,7 @@ fun GameOptionCard(value: String, title: String, icon: ImageVector, modifier: Mo
         modifier = modifier
             .width(200.dp)
             .height(140.dp)
-            .border(1.dp, color= Nepal, shape = RoundedCornerShape(16.dp)),
+            .border(1.dp, color = Nepal, shape = RoundedCornerShape(16.dp)),
         colors = CardDefaults.cardColors(containerColor = Mirage), // Fondo común
         elevation = CardDefaults.cardElevation(4.dp),
         shape = RoundedCornerShape(16.dp)
