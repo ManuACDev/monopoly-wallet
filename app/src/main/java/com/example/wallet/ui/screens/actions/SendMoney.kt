@@ -56,6 +56,7 @@ import com.example.wallet.models.Player
 import com.example.wallet.services.AuthService
 import com.example.wallet.services.FirestoreService
 import com.example.wallet.services.InteractionService
+import com.example.wallet.ui.components.NativeAdComponent
 import com.example.wallet.ui.theme.Mirage
 import com.example.wallet.ui.theme.Nepal
 import com.example.wallet.ui.theme.PickledBluewood
@@ -81,6 +82,12 @@ fun SendMoneyScreen(modifier: Modifier = Modifier, gameId: String) {
         if (uid != null) {
             SendDetails(gameId, uid)
         }
+        NativeAdComponent(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp), // Padding para separar el anuncio de los otros elementos
+            adUnitId = "ca-app-pub-4224838935226247/5179370216"
+        )
     }
 }
 
