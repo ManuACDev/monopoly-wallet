@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.polybank"
+    namespace = "com.boardgame.polybank"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.polybank"
+        applicationId = "com.boardgame.polybank"
         minSdk = 24
         targetSdk = 34
         versionCode = 1
