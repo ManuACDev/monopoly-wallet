@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.wallet"
+    namespace = "com.example.polybank"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.wallet"
+        applicationId = "com.example.polybank"
         minSdk = 24
         targetSdk = 34
         versionCode = 1
